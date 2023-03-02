@@ -5,11 +5,12 @@ const authController = require("../controller/auth");
 const isAuth = require("../middleware/is-auth");
 const { check } = require("express-validator");
 
-router.post(
+router.put(
   "/addUserInfo",
   isAuth,
   [
     check("name").trim().notEmpty().withMessage("Name is required"),
+    check("email").isEmail(),
     check("birthday")
       .isDate({ format: "YYYY-MM-DD" })
       .withMessage("Invalid date format"),
@@ -43,5 +44,15 @@ router.post(
 );
 
 router.get("/profileStatus", isAuth, userController.profileStatus);
+router.post(
+  "/isEmailExist",
+  isAuth,
+  [check("email").isEmail()],
+  userController.checkEmailAlreadyExists
+);
+router.get("/getUserInfo", isAuth, userController.getUserInfo);
+router.put("/likedProfile", isAuth, userController.updateLikedProfiles);
+router.put("/dislikedProfile", isAuth, userController.updateDislikedProfiles);
+// router.get("/possibleProfiles", isAuth, userController.getMatchedProfiles);
 
 module.exports = router;
