@@ -44,6 +44,15 @@ router.put(
 );
 
 router.get("/profileStatus", isAuth, userController.profileStatus);
-// router.get("/matchedProfiles", isAuth, userController.getMatchedProfiles);
+router.post(
+  "/isEmailExist",
+  isAuth,
+  [check("email").isEmail()],
+  userController.checkEmailAlreadyExists
+);
+router.get("/getUserInfo", isAuth, userController.getUserInfo);
+router.put("/likedProfile", isAuth, userController.updateLikedProfiles);
+router.put("/dislikedProfile", isAuth, userController.updateDislikedProfiles);
+// router.get("/possibleProfiles", isAuth, userController.getMatchedProfiles);
 
 module.exports = router;
