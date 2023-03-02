@@ -38,7 +38,7 @@ const userSchema = new Schema({
   role: {
     type: String,
   },
-  experience: {
+  workExperience: {
     type: Number,
   },
   location: {
@@ -75,7 +75,7 @@ const userSchema = new Schema({
   privacy: {
     show: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     profileComplete: {
       type: Boolean,
@@ -92,6 +92,32 @@ const userSchema = new Schema({
   socialMedia: {
     linkedIn: String,
     Github: String,
+  },
+  matches: {
+    matchedProfiles: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+      },
+    ],
+    likedProfiles: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+      },
+    ],
+    dislikedProfiles: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+      },
+    ],
   },
 });
 
