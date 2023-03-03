@@ -6,7 +6,7 @@ const isAuth = require("../middleware/is-auth");
 const { check } = require("express-validator");
 
 router.put(
-  "/addUserInfo",
+  "/info",
   isAuth,
   [
     check("name").trim().notEmpty().withMessage("Name is required"),
@@ -50,9 +50,10 @@ router.post(
   [check("email").isEmail()],
   userController.checkEmailAlreadyExists
 );
-router.get("/getUserInfo", isAuth, userController.getUserInfo);
 router.put("/likedProfile", isAuth, userController.updateLikedProfiles);
 router.put("/dislikedProfile", isAuth, userController.updateDislikedProfiles);
 // router.get("/possibleProfiles", isAuth, userController.getMatchedProfiles);
+router.get("/info", isAuth, userController.getUserInfo);
+// router.get("/matchedProfiles", isAuth, userController.getMatchedProfiles);
 
 module.exports = router;
