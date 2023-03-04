@@ -1,8 +1,7 @@
 const User = require("../models/user");
 require("dotenv").config();
-const { BASE_URL_FRONTEND } = require("../keys");
+const { BASE_URL_FRONTEND, JWT_KEY } = process.env;
 const jwt = require("jsonwebtoken");
-const JWT_KEY = process.env.JWT_KEY;
 
 exports.successGithubLogin = (req, res, next) => {
   if (req.user) {
