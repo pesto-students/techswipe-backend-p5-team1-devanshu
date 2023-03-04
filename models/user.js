@@ -79,7 +79,7 @@ const userSchema = new Schema({
   privacy: {
     show: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     profileComplete: {
       type: Boolean,
