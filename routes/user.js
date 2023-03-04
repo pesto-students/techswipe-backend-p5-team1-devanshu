@@ -10,7 +10,7 @@ router.put(
   isAuth,
   [
     check("name").trim().notEmpty().withMessage("Name is required"),
-    check("email").isEmail(),
+    check("email").isEmail().trim(),
     check("birthday")
       .isDate({ format: "YYYY-MM-DD" })
       .withMessage("Invalid date format"),
@@ -40,7 +40,7 @@ router.put(
       .isInt({ min: 1000 })
       .withMessage("Radius must be an integer greater than 1 km"),
   ],
-  userController.addUserInfo
+  userController.updateUserInfo
 );
 
 router.get("/profileStatus", isAuth, userController.profileStatus);

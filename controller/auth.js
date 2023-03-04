@@ -26,7 +26,7 @@ exports.successGithubLogin = (req, res, next) => {
                   JWT_KEY,
                   { expiresIn: "1w" }
                 );
-                res.redirect(`${BASE_URL_FRONTEND}/dashboard?token=${token}`);
+                res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
               });
             } else {
               const data = {};
@@ -55,7 +55,7 @@ exports.successGithubLogin = (req, res, next) => {
                   JWT_KEY,
                   { expiresIn: "1w" }
                 );
-                res.redirect(`${BASE_URL_FRONTEND}/profile?token=${token}`);
+                res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
               });
             }
           });
@@ -97,7 +97,7 @@ exports.successGithubLogin = (req, res, next) => {
           JWT_KEY,
           { expiresIn: "1w" }
         );
-        res.redirect(`${BASE_URL_FRONTEND}/dashboard?token=${token}`);
+        res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
       }
     });
   } else {
@@ -115,7 +115,7 @@ exports.successLinkedinLogin = (req, res, next) => {
     console.log(
       `UserName = ${name}, email = ${email}, id = ${id}, photo=${profilePhoto} `
     );
-    User.find({ linkedIn: id }).then((id_user) => {
+    User.find({ linkedinId: id }).then((id_user) => {
       console.log("User - ", id_user);
 
       if (id_user.length < 1) {
@@ -128,7 +128,7 @@ exports.successLinkedinLogin = (req, res, next) => {
               console.log("Same email1");
               if (e_user.length === 1) {
                 console.log("Same email");
-                e_user[0]["linkedIn"] = id;
+                e_user[0]["linkedinId"] = id;
                 e_user[0].save().then((loadedUser) => {
                   const token = jwt.sign(
                     {
@@ -137,7 +137,7 @@ exports.successLinkedinLogin = (req, res, next) => {
                     JWT_KEY,
                     { expiresIn: "1w" }
                   );
-                  res.redirect(`${BASE_URL_FRONTEND}/dashboard?token=${token}`);
+                  res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
                 });
               } else {
                 const data = {};
@@ -162,7 +162,7 @@ exports.successLinkedinLogin = (req, res, next) => {
                     JWT_KEY,
                     { expiresIn: "1w" }
                   );
-                  res.redirect(`${BASE_URL_FRONTEND}/profile?token=${token}`);
+                  res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
                 });
               }
             })
@@ -179,7 +179,7 @@ exports.successLinkedinLogin = (req, res, next) => {
           if (profilePhoto !== 0) {
             data["profilePhoto"] = profilePhoto;
           }
-          data["linkedIn"] = id;
+          data["linkedinId"] = id;
           console.log("data - ", data);
           const user = new User(data);
           console.log("User- ", user);
@@ -204,7 +204,7 @@ exports.successLinkedinLogin = (req, res, next) => {
           JWT_KEY,
           { expiresIn: "1w" }
         );
-        res.redirect(`${BASE_URL_FRONTEND}/profile?token=${token}`);
+        res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
       }
     });
   } else {
