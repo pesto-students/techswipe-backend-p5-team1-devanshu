@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const authController = require("../controller/auth");
 const passport = require("passport");
-const { BASE_URL, BASE_URL_FRONTEND } = require("../keys");
+require("dotenv").config();
+const { BASE_URL, BASE_URL_FRONTEND } = process.env;
 
 router.get(
   "/github",

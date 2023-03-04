@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controller/user");
-const authController = require("../controller/auth");
 const isAuth = require("../middleware/is-auth");
 const { check } = require("express-validator");
 
@@ -10,7 +9,7 @@ router.put(
   isAuth,
   [
     check("name").trim().notEmpty().withMessage("Name is required"),
-    check("email").isEmail(),
+    check("email").isEmail().trim(),
     check("birthday")
       .isDate({ format: "YYYY-MM-DD" })
       .withMessage("Invalid date format"),
@@ -40,20 +39,20 @@ router.put(
       .isInt({ min: 1000 })
       .withMessage("Radius must be an integer greater than 1 km"),
   ],
-  userController.addUserInfo
+  userController.updateUserInfo
 );
 
-router.get("/profileStatus", isAuth, userController.profileStatus);
+router.get("/profile-status", isAuth, userController.profileStatus);
 router.post(
   "/isEmailExist",
   isAuth,
-  [check("email").isEmail()],
+  [check("email").isEmail().trim()],
   userController.checkEmailAlreadyExists
 );
-router.put("/likedProfile", isAuth, userController.updateLikedProfiles);
-router.put("/dislikedProfile", isAuth, userController.updateDislikedProfiles);
-// router.get("/possibleProfiles", isAuth, userController.getMatchedProfiles);
 router.get("/info", isAuth, userController.getUserInfo);
+router.put("/liked-profile", isAuth, userController.updateLikedProfiles);
+router.put("/disliked-profile", isAuth, userController.updateDislikedProfiles);
+// router.get("/possibleProfiles", isAuth, userController.getMatchedProfiles);
 // router.get("/matchedProfiles", isAuth, userController.getMatchedProfiles);
 
 module.exports = router;

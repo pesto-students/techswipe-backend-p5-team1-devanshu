@@ -14,10 +14,13 @@ const userSchema = new Schema({
   phoneNumber: {
     type: Number,
   },
+  bio: {
+    type: String,
+  },
   githubId: {
     type: Number,
   },
-  linkedIn: {
+  linkedinId: {
     type: String,
   },
   birthday: {
@@ -39,7 +42,7 @@ const userSchema = new Schema({
     type: String,
   },
   workExperience: {
-    type: Number,
+    type: String,
   },
   location: {
     type: {
@@ -48,6 +51,7 @@ const userSchema = new Schema({
     },
     coordinates: {
       type: Array,
+      default: [79.301195, 23.472885],
     },
   },
   discoverySettings: {
@@ -75,7 +79,7 @@ const userSchema = new Schema({
   privacy: {
     show: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     profileComplete: {
       type: Boolean,
@@ -86,9 +90,24 @@ const userSchema = new Schema({
       default: false,
     },
   },
-  techStack: {
-    type: Array,
-  },
+  techStack: [
+    {
+      techStackName: String,
+      techStackIcon: String,
+    },
+  ],
+  interest: [
+    {
+      interestName: String,
+      interestIcon: String,
+    },
+  ],
+  QuestionAnswers: [
+    {
+      question: String,
+      answer: String,
+    },
+  ],
   socialMedia: {
     linkedIn: String,
     Github: String,
@@ -96,26 +115,20 @@ const userSchema = new Schema({
   matches: {
     matchedProfiles: [
       {
-        userId: {
-          type: Schema.Types.ObjectId,
-          ref: "User",
-        },
+        type: Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     likedProfiles: [
       {
-        userId: {
-          type: Schema.Types.ObjectId,
-          ref: "User",
-        },
+        type: Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     dislikedProfiles: [
       {
-        userId: {
-          type: Schema.Types.ObjectId,
-          ref: "User",
-        },
+        type: Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
   },
