@@ -184,6 +184,11 @@ exports.updateUserInfoValidator = [
     .isLatLong()
     .optional({ nullable: true })
     .withMessage("Invalid latitude and logtitude"),
+  check("privacy.show")
+    .trim()
+    .isBoolean()
+    .optional({ nullable: true })
+    .withMessage("Must be a boolean true or false"),
 ];
 
 exports.emailValidator = [

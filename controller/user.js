@@ -196,6 +196,7 @@ exports.updateUserInfo = async (req, res, next) => {
       gender,
       discoverySettings,
       coordinates,
+      privacy,
     } = req.body;
 
     let new_birthday,
@@ -206,7 +207,8 @@ exports.updateUserInfo = async (req, res, next) => {
       discoverySettings_role,
       discoverySettings_gender,
       discoverySettings_radius,
-      discoverySettings_ageRange;
+      discoverySettings_ageRange,
+      show;
     if (birthday) {
       new_birthday = new Date(birthday);
       age = calculateAge(new_birthday);
@@ -226,6 +228,10 @@ exports.updateUserInfo = async (req, res, next) => {
         discoverySettings_radius,
         discoverySettings_ageRange,
       ] = [role, gender, radius, ageRange];
+    }
+
+    if (privacy) {
+      show = privacy.show;
     }
     // Updating user with the new information
 
@@ -250,6 +256,7 @@ exports.updateUserInfo = async (req, res, next) => {
           { "discoverySettings.gender": { $ne: discoverySettings_gender } },
           { "discoverySettings.ageRange": { $ne: discoverySettings_ageRange } },
           { "discoverySettings.radius": { $ne: discoverySettings_radius } },
+          { "privacy.show": { $ne: show } },
         ],
       },
       {
@@ -272,6 +279,7 @@ exports.updateUserInfo = async (req, res, next) => {
           "discoverySettings.gender": discoverySettings_gender,
           "discoverySettings.ageRange": discoverySettings_ageRange,
           "discoverySettings.radius": discoverySettings_radius,
+          "privacy.show": show,
         },
       }
     )
