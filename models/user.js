@@ -90,21 +90,11 @@ const userSchema = new Schema({
       default: false,
     },
   },
-  techStack: [
-    {
-      techStackName: String,
-      techStackIcon: String,
-    },
-  ],
-  interest: [
-    {
-      interestName: String,
-      interestIcon: String,
-    },
-  ],
+  techStack: Array,
+  interest: Array,
   QuestionAnswers: [
     {
-      question: String,
+      qid: Number,
       answer: String,
     },
   ],

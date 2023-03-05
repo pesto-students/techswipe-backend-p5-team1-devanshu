@@ -39,7 +39,7 @@ exports.checkEmailAlreadyExists = async (req, res, next) => {
       throw error;
     }
     // check with the status code
-    res.status(200).json({ message: "Email not found" });
+    res.status(404).json({ message: "Email not found" });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -73,7 +73,7 @@ exports.getUserInfo = async (req, res, next) => {
   }
 };
 
-exports.updateUserInfo = async (req, res, next) => {
+exports.addUserInfo = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -104,13 +104,14 @@ exports.updateUserInfo = async (req, res, next) => {
 
     let new_birthday = new Date(birthday);
     const age = calculateAge(new_birthday);
+    let [lat, long] = coordinates.split(",");
     const location = {
       type: "Point",
-      coordinates: coordinates,
+      coordinates: [parseFloat(long), parseFloat(lat)],
     };
 
     //Check for a user already exist with given email id
-    const result = await User.findOne({ email: email }, { _id: 1 });
+    const result = await User.findOne({ email: email }, { _id: 1, privacy: 1 });
     const id = result !== null ? result._id.toString() : userId;
     console.log("result- ", result);
     if (id !== userId) {
@@ -119,7 +120,12 @@ exports.updateUserInfo = async (req, res, next) => {
       console.log(errors);
       throw error;
     }
-    console.log(location);
+    let privacy =
+      result !== null ? result.privacy : { profileComplete: true, show: true };
+    if (!privacy.profileComplete) {
+      privacy.profileComplete = true;
+      privacy.show = true;
+    }
     // Updating user with the new information
 
     User.updateOne(
@@ -142,10 +148,135 @@ exports.updateUserInfo = async (req, res, next) => {
           age: age,
           location: location,
           discoverySettings: discoverySettings,
+          "privacy.profileComplete": privacy.profileComplete,
+          "privacy.show": privacy.show,
         },
       }
     )
       .then((result) => {
+        res.status(200).json({ message: "User Updated!" });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.updateUserInfo = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed.");
+      error.statusCode = 422;
+      error.data = errors.array();
+      console.log(errors);
+      throw error;
+    }
+    const userId = req.userId;
+    const {
+      name,
+      profilePhoto,
+      phoneNumber,
+      bio,
+      company,
+      role,
+      workExperience,
+      techStack,
+      interest,
+      QuestionAnswers,
+      birthday,
+      gender,
+      discoverySettings,
+      coordinates,
+    } = req.body;
+
+    let new_birthday,
+      lat,
+      long,
+      location,
+      age,
+      discoverySettings_role,
+      discoverySettings_gender,
+      discoverySettings_radius,
+      discoverySettings_ageRange;
+    if (birthday) {
+      new_birthday = new Date(birthday);
+      age = calculateAge(new_birthday);
+    }
+    if (coordinates) {
+      [lat, long] = coordinates.split(",");
+      location = {
+        type: "Point",
+        coordinates: [parseFloat(long), parseFloat(lat)],
+      };
+    }
+    if (discoverySettings) {
+      let { role, gender, radius, ageRange } = discoverySettings;
+      [
+        discoverySettings_role,
+        discoverySettings_gender,
+        discoverySettings_radius,
+        discoverySettings_ageRange,
+      ] = [role, gender, radius, ageRange];
+    }
+    // Updating user with the new information
+
+    User.updateOne(
+      {
+        _id: userId,
+        $or: [
+          { name: { $ne: name } },
+          { profilePhoto: { $ne: profilePhoto } },
+          { bio: { $ne: bio } },
+          { role: { $ne: role } },
+          { workExperience: { $ne: workExperience } },
+          { techStack: { $ne: techStack } },
+          { interest: { $ne: interest } },
+          { QuestionAnswers: { $ne: QuestionAnswers } },
+          { phoneNumber: { $ne: phoneNumber } },
+          { birthday: { $ne: birthday } },
+          { gender: { $ne: gender } },
+          { age: { $ne: age } },
+          { location: { $ne: location } },
+          { "discoverySettings.role": { $ne: discoverySettings_role } },
+          { "discoverySettings.gender": { $ne: discoverySettings_gender } },
+          { "discoverySettings.ageRange": { $ne: discoverySettings_ageRange } },
+          { "discoverySettings.radius": { $ne: discoverySettings_radius } },
+        ],
+      },
+      {
+        $set: {
+          name: name,
+          profilePhoto: profilePhoto,
+          bio: bio,
+          company: company,
+          role: role,
+          workExperience: workExperience,
+          techStack: techStack,
+          interest: interest,
+          QuestionAnswers: QuestionAnswers,
+          phoneNumber: phoneNumber,
+          birthday: birthday,
+          gender: gender,
+          age: age,
+          location: location,
+          "discoverySettings.role": discoverySettings_role,
+          "discoverySettings.gender": discoverySettings_gender,
+          "discoverySettings.ageRange": discoverySettings_ageRange,
+          "discoverySettings.radius": discoverySettings_radius,
+        },
+      }
+    )
+      .then((result) => {
+        console.log(result);
         res.status(200).json({ message: "User Updated!" });
       })
       .catch((err) => {
