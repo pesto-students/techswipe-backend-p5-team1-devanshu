@@ -27,7 +27,7 @@ router.post(
 );
 router.get("/info", isAuth, userController.getUserInfo);
 router.post(
-  "/get-reverse-geocode",
+  "/reverse-geocode",
   isAuth,
   locationValidator,
   userController.getReverseGeocode
