@@ -6,6 +6,7 @@ const {
   addUserInfoValidator,
   emailValidator,
   updateUserInfoValidator,
+  locationValidator,
 } = require("../utilits/validators");
 
 router.put("/info", isAuth, addUserInfoValidator, userController.addUserInfo);
@@ -25,6 +26,12 @@ router.post(
   userController.checkEmailAlreadyExists
 );
 router.get("/info", isAuth, userController.getUserInfo);
+router.post(
+  "/get-reverse-geocode",
+  isAuth,
+  locationValidator,
+  userController.getReverseGeocode
+);
 router.put("/liked-profile", isAuth, userController.updateLikedProfiles);
 router.put("/disliked-profile", isAuth, userController.updateDislikedProfiles);
 // router.get("/possibleProfiles", isAuth, userController.getMatchedProfiles);

@@ -14,6 +14,9 @@ const userSchema = new Schema({
   phoneNumber: {
     type: Number,
   },
+  place: {
+    type: String,
+  },
   bio: {
     type: String,
   },

@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
 const { calculateAge } = require("../utilits/utilit");
+const { response } = require("express");
 
 exports.profileStatus = async (req, res, next) => {
   const userId = req.userId;
@@ -100,6 +101,7 @@ exports.addUserInfo = async (req, res, next) => {
       gender,
       discoverySettings,
       coordinates,
+      place,
     } = req.body;
 
     let new_birthday = new Date(birthday);
@@ -146,6 +148,7 @@ exports.addUserInfo = async (req, res, next) => {
           birthday: birthday,
           gender: gender,
           age: age,
+          place: place,
           location: location,
           discoverySettings: discoverySettings,
           "privacy.profileComplete": privacy.profileComplete,
@@ -197,6 +200,7 @@ exports.updateUserInfo = async (req, res, next) => {
       discoverySettings,
       coordinates,
       privacy,
+      place,
     } = req.body;
 
     let new_birthday,
@@ -250,6 +254,7 @@ exports.updateUserInfo = async (req, res, next) => {
           { phoneNumber: { $ne: phoneNumber } },
           { birthday: { $ne: birthday } },
           { gender: { $ne: gender } },
+          { place: { $ne: place } },
           { age: { $ne: age } },
           { location: { $ne: location } },
           { "discoverySettings.role": { $ne: discoverySettings_role } },
@@ -266,6 +271,7 @@ exports.updateUserInfo = async (req, res, next) => {
           bio: bio,
           company: company,
           role: role,
+          place: place,
           workExperience: workExperience,
           techStack: techStack,
           interest: interest,
@@ -299,6 +305,47 @@ exports.updateUserInfo = async (req, res, next) => {
     }
     next(err);
   }
+};
+
+exports.getReverseGeocode = async (req, res, next) => {
+  let { coordinates } = req.body;
+  let [latitude, longitude] = coordinates.split(",");
+
+  const axios = require("axios");
+  const config = {
+    method: "get",
+    url: `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=112eddcf23924c998ccb79ed3f2c3b6c`,
+    headers: {},
+  };
+
+  axios(config)
+    .then((response) => {
+      const {
+        country,
+        country_code,
+        state,
+        state_code,
+        state_district,
+        county,
+      } = response.data.features[0].properties;
+      let name = `${county},${state_code},${country_code}`;
+      let data = {
+        placeName: name,
+        country: country,
+        country_code: country_code,
+        state: state,
+        state_code: state_code,
+        district: state_district,
+        county: county,
+      };
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
 
 exports.updateLikedProfiles = async (req, res, next) => {
