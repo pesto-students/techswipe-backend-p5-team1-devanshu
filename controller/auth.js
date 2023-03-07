@@ -105,108 +105,115 @@ exports.successGithubLogin = (req, res, next) => {
 };
 
 exports.successLinkedinLogin = (req, res, next) => {
-  if (req.user) {
+  try {
     console.log(req.user);
-    const email = req.user.emails[0].value;
-    const name = req.user.displayName;
-    const id = req.user.id;
-    const profilePhoto = req.user.photos.at(-1).value;
-    console.log(
-      `UserName = ${name}, email = ${email}, id = ${id}, photo=${profilePhoto} `
-    );
-    User.find({ linkedinId: id }).then((id_user) => {
-      console.log("User - ", id_user);
+    if (req.user) {
+      console.log(req.user);
+      const email =
+        req.user.emails.length !== 0 ? req.user.emails[0].value : "";
+      const name = req.user.displayName;
+      const id = req.user.id;
+      let profilePhoto =
+        req.user.photos.length !== 0 ? req.user.photos.at(-1).value : "";
+      console.log(
+        `UserName = ${name}, email = ${email}, id = ${id}, photo=${req.user.photos} `
+      );
+      User.find({ linkedinId: id }).then((id_user) => {
+        console.log("User - ", id_user);
 
-      if (id_user.length < 1) {
-        console.log("No User with linkedin id ", id);
-        //Check wether user with same email is present
-        if (email !== null && email !== undefined && email !== "") {
-          console.log("Same email2");
-          User.find({ email: email })
-            .then((e_user) => {
-              console.log("Same email1");
-              if (e_user.length === 1) {
-                console.log("Same email");
-                e_user[0]["linkedinId"] = id;
-                e_user[0].save().then((loadedUser) => {
-                  const token = jwt.sign(
-                    {
-                      userId: loadedUser._id.toString(),
-                    },
-                    JWT_KEY,
-                    { expiresIn: "1w" }
-                  );
-                  res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
-                });
-              } else {
-                const data = {};
-                if (name !== "") {
-                  data["name"] = name;
+        if (id_user.length < 1) {
+          console.log("No User with linkedin id ", id);
+          //Check wether user with same email is present
+          if (email !== null && email !== undefined && email !== "") {
+            console.log("Same email2");
+            User.find({ email: email })
+              .then((e_user) => {
+                console.log("Same email1");
+                if (e_user.length === 1) {
+                  console.log("Same email");
+                  e_user[0]["linkedinId"] = id;
+                  e_user[0].save().then((loadedUser) => {
+                    const token = jwt.sign(
+                      {
+                        userId: loadedUser._id.toString(),
+                      },
+                      JWT_KEY,
+                      { expiresIn: "1w" }
+                    );
+                    res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
+                  });
+                } else {
+                  const data = {};
+                  if (name !== "") {
+                    data["name"] = name;
+                  }
+                  if (profilePhoto !== "") {
+                    data["profilePhoto"] = profilePhoto;
+                  }
+                  if (email !== null) {
+                    data["email"] = email;
+                  }
+                  data["linkedinId"] = id;
+                  console.log("data - ", data);
+                  const user = new User(data);
+                  console.log("User- ", user);
+                  user.save().then((loadedUser) => {
+                    const token = jwt.sign(
+                      {
+                        userId: loadedUser._id.toString(),
+                      },
+                      JWT_KEY,
+                      { expiresIn: "1w" }
+                    );
+                    res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
+                  });
                 }
-                if (profilePhoto !== 0) {
-                  data["profilePhoto"] = profilePhoto;
-                }
-                if (email !== null) {
-                  data["email"] = email;
-                }
-                data["linkedIn"] = id;
-                console.log("data - ", data);
-                const user = new User(data);
-                console.log("User- ", user);
-                user.save().then((loadedUser) => {
-                  const token = jwt.sign(
-                    {
-                      userId: loadedUser._id.toString(),
-                    },
-                    JWT_KEY,
-                    { expiresIn: "1w" }
-                  );
-                  res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
-                });
-              }
-            })
-            .catch((err) => {
-              console.log(err);
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          } else {
+            // Consider the user be a new user
+            console.log("No email");
+            const data = {};
+            if (name !== "") {
+              data["name"] = name;
+            }
+            if (profilePhoto !== 0) {
+              data["profilePhoto"] = profilePhoto;
+            }
+            data["linkedinId"] = id;
+            console.log("data - ", data);
+            const user = new User(data);
+            console.log("User- ", user);
+            user.save().then((loadedUser) => {
+              const token = jwt.sign(
+                {
+                  userId: loadedUser._id.toString(),
+                },
+                JWT_KEY,
+                { expiresIn: "1w" }
+              );
+              res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
             });
+          }
         } else {
-          // Consider the user be a new user
-          console.log("No email");
-          const data = {};
-          if (name !== "") {
-            data["name"] = name;
-          }
-          if (profilePhoto !== 0) {
-            data["profilePhoto"] = profilePhoto;
-          }
-          data["linkedinId"] = id;
-          console.log("data - ", data);
-          const user = new User(data);
-          console.log("User- ", user);
-          user.save().then((loadedUser) => {
-            const token = jwt.sign(
-              {
-                userId: loadedUser._id.toString(),
-              },
-              JWT_KEY,
-              { expiresIn: "1w" }
-            );
-            res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
-          });
+          //Already registered with github user
+          console.log("Already with linedIn id", id);
+          const token = jwt.sign(
+            {
+              userId: id_user[0]._id.toString(),
+            },
+            JWT_KEY,
+            { expiresIn: "1w" }
+          );
+          res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
         }
-      } else {
-        //Already registered with github user
-        console.log("Already with linedIn id", id);
-        const token = jwt.sign(
-          {
-            userId: id_user[0]._id.toString(),
-          },
-          JWT_KEY,
-          { expiresIn: "1w" }
-        );
-        res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
-      }
-    });
-  } else {
+      });
+    } else {
+      res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
+    }
+  } catch (err) {
     res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
   }
 };
