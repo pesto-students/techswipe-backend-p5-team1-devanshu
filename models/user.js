@@ -93,14 +93,19 @@ const userSchema = new Schema({
       default: false,
     },
   },
+  subscription: {
+    status: {
+      type: Boolean,
+      default: false,
+    },
+    limit: {
+      type: Number,
+      default: 30,
+    },
+  },
   techStack: Array,
   interest: Array,
-  QuestionAnswers: [
-    {
-      qid: Number,
-      answer: String,
-    },
-  ],
+  QuestionAnswers: Array,
   socialMedia: {
     linkedIn: String,
     Github: String,
