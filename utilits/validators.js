@@ -91,9 +91,8 @@ exports.addUserInfoValidator = [
     .withMessage("Interest Must contain minimum 3 elements"),
 
   check("QuestionAnswers")
-    .not()
-    .isEmpty()
-    .withMessage("QuestionAnswers must not be empty"),
+    .isArray({ min: 10 })
+    .withMessage("QuestionAnswers must have 10 values"),
 
   check("coordinates")
     .isLatLong()
@@ -127,12 +126,12 @@ exports.updateUserInfoValidator = [
       "Software Tester",
     ])
     .optional({ nullable: true })
-    .withMessage("Discovery role is required"),
+    .withMessage("discoverySettings role is required"),
 
   check("discoverySettings.gender")
-    .isIn(["Male", "Female", "Other"])
+    .isIn(["All", "Male", "Female", "Other"])
     .optional({ nullable: true })
-    .withMessage("Invalid discovery gender value"),
+    .withMessage("Invalid discoverySettings gender value"),
 
   check("discoverySettings.ageRange")
     .isArray({ min: 2, max: 2 })
@@ -214,10 +213,9 @@ exports.updateUserInfoValidator = [
     .withMessage("Interest Must contain minimum 3 elements"),
 
   check("QuestionAnswers")
-    .not()
-    .isEmpty()
+    .isArray({ min: 10 })
     .optional({ nullable: true })
-    .withMessage("QuestionAnswers must not be empty"),
+    .withMessage("QuestionAnswers must have 10 values"),
 
   check("coordinates")
     .isLatLong()

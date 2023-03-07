@@ -1,7 +1,9 @@
 const User = require("../models/user");
+require("dotenv").config();
 const { validationResult } = require("express-validator");
 const { calculateAge } = require("../utilits/utilit");
 const { response } = require("express");
+const { GEOAPIFY_API_KEY } = process.env;
 
 exports.profileStatus = async (req, res, next) => {
   const userId = req.userId;
@@ -314,7 +316,7 @@ exports.getReverseGeocode = async (req, res, next) => {
   const axios = require("axios");
   const config = {
     method: "get",
-    url: `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=112eddcf23924c998ccb79ed3f2c3b6c`,
+    url: `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=${GEOAPIFY_API_KEY}`,
     headers: {},
   };
 
