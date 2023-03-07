@@ -34,7 +34,11 @@ router.post(
 );
 router.put("/liked-profile", isAuth, userController.updateLikedProfiles);
 router.put("/disliked-profile", isAuth, userController.updateDislikedProfiles);
-// router.get("/possibleProfiles", isAuth, userController.getMatchedProfiles);
+router.get(
+  "/possible-profiles",
+  isAuth,
+  userController.getPossibleMatchingProfiles
+);
 // router.get("/matchedProfiles", isAuth, userController.getMatchedProfiles);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const User = require("../models/user");
 require("dotenv").config();
 const { validationResult } = require("express-validator");
-const { calculateAge } = require("../utilits/utilit");
+const { calculateAge, createPipeline } = require("../utilits/utilit");
 const { response } = require("express");
 const { GEOAPIFY_API_KEY } = process.env;
 
@@ -390,58 +390,36 @@ exports.updateDislikedProfiles = async (req, res, next) => {
   next();
 };
 
-// exports.getPossibleMatchingProfiles = (req, res, next) => {
-//   // const userId = req.userId;
-//   // const include = {
-//   //   _id: 0,
-//   //   location: 1,
-//   //   discoverySettings: 1,
-//   // };
-//   // // Getting users discovery settings and location
-//   // User.findById(userId, include).then((user) => {
-//   //   if (!user) {
-//   //     const error = new Error("User not found.");
-//   //     error.statusCode = 404;
-//   //     throw error;
-//   //   }
-//   //   const query = {
-//   //     location: {
-//   //       $near: {
-//   //         $geometry: user.location,
-//   //         $minDistance: 100,
-//   //         $maxDistance: user.discoverySettings.radius,
-//   //       },
-//   //     },
-//   //   };
-//   //   User.find(query).then((user) => {
-//   //     if (!user) {
-//   //       const error = new Error("No matches in the given radius");
-//   //       error.statusCode = 404;
-//   //       throw error;
-//   //     }
-//   //     res.status(200).json({ user: user });
-//   //   });
-//   // });
-
-//   const pipeline = [
-//     {
-//       $geoNear: {
-//         near: {
-//           type: "Point",
-//           coordinates: [77.496034, 9.654886],
-//         },
-//         distanceField: "distance",
-//         maxDistance: 50000,
-//         query: {
-//           age: {
-//             $gte: 18,
-//             $lte: 45,
-//           },
-//           role: "Full-Stack Developer",
-//           gender: "Male",
-//         },
-//         spherical: true,
-//       },
-//     },
-//   ];
-// };
+exports.getPossibleMatchingProfiles = async (req, res, next) => {
+  const userId = req.userId;
+  console.log(userId);
+  const include = {
+    location: 1,
+    discoverySettings: 1,
+    "matches.likedProfiles": 1,
+    "matches.dislikedProfiles": 1,
+    techStack: 1,
+    interest: 1,
+    QuestionAnswers: 1,
+    "subscription.limit": 1,
+  };
+  // Getting users discovery settings and location
+  try {
+    const user = await User.findById(userId, include);
+    if (!user) {
+      const error = new Error("User not found.");
+      error.statusCode = 404;
+      throw error;
+    }
+    const pipeline = createPipeline(user);
+    let possibleMatches = await User.aggregate(pipeline);
+    res
+      .status(200)
+      .json({ possibleMatches: possibleMatches, pipeline: pipeline });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
