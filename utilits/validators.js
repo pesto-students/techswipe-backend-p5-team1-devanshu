@@ -78,10 +78,6 @@ exports.addUserInfoValidator = [
     .isEmpty()
     .withMessage("Invalid workExperience"),
 
-  check("gender")
-    .isIn(["Male", "Female", "Other"])
-    .withMessage("Invalid gender value"),
-
   check("techStack")
     .isArray({ min: 3 })
     .withMessage("TechStack Must contain minimum 3 elements"),
@@ -196,11 +192,6 @@ exports.updateUserInfoValidator = [
     .isEmpty()
     .optional({ nullable: true })
     .withMessage("Invalid workExperience"),
-
-  check("gender")
-    .isIn(["Male", "Female", "Other"])
-    .optional({ nullable: true })
-    .withMessage("Invalid gender value"),
 
   check("techStack")
     .isArray({ min: 3 })
