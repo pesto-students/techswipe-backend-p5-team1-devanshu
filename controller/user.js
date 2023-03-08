@@ -1,7 +1,11 @@
 const User = require("../models/user");
 require("dotenv").config();
 const { validationResult } = require("express-validator");
-const { calculateAge, createPipeline } = require("../utilits/utilit");
+const {
+  calculateAge,
+  createPipeline,
+  getCurrentISTDate,
+} = require("../utilits/utilit");
 const { response } = require("express");
 const { GEOAPIFY_API_KEY } = process.env;
 
@@ -354,9 +358,14 @@ exports.updateLikedProfiles = async (req, res, next) => {
   const userId = req.userId;
   const likedUserId = req.body;
   try {
+    let currentDate = new Date(getCurrentISTDate());
     const result = await User.updateOne(
       { _id: userId },
-      { $addToSet: { "matches.likedProfiles": likedUserId.userId } }
+      {
+        $addToSet: { "matches.likedProfiles": likedUserId.userId },
+        $inc: { dailyProfileViewCount: 1 },
+        $set: { lastProfileViewDate: currentDate },
+      }
     );
     res.status(200).json({ message: "liked profile added!" });
   } catch (err) {
@@ -372,14 +381,19 @@ exports.updateDislikedProfiles = async (req, res, next) => {
   const userId = req.userId;
   const dislikedUserId = req.body;
   try {
+    let currentDate = getCurrentISTDate() + "Z";
+    console.log(currentDate);
     const result = await User.updateOne(
       { _id: userId },
       {
+        $set: { lastProfileViewDate: currentDate },
         $addToSet: {
           "matches.dislikedProfiles": dislikedUserId.userId,
         },
+        $inc: { dailyProfileViewCount: 1 },
       }
     );
+    console.log(result);
     res.status(200).json({ message: "Disliked profile added!" });
   } catch (err) {
     if (!err.statusCode) {
@@ -392,7 +406,9 @@ exports.updateDislikedProfiles = async (req, res, next) => {
 
 exports.getPossibleMatchingProfiles = async (req, res, next) => {
   const userId = req.userId;
-  console.log(userId);
+  const lastUserId = req.query.lastUserId;
+  let limit = 10;
+  console.log("UserId- ", lastUserId);
   const include = {
     location: 1,
     discoverySettings: 1,
@@ -402,6 +418,8 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
     interest: 1,
     QuestionAnswers: 1,
     "subscription.limit": 1,
+    dailyProfileViewCount: 1,
+    lastProfileViewDate: 1,
   };
   // Getting users discovery settings and location
   try {
@@ -411,11 +429,50 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
-    const pipeline = createPipeline(user);
-    let possibleMatches = await User.aggregate(pipeline);
-    res
-      .status(200)
-      .json({ possibleMatches: possibleMatches, pipeline: pipeline });
+
+    const currentDate = getCurrentISTDate();
+    const lastViewDate = user.lastProfileViewDate
+      ? user.lastProfileViewDate.toLocaleString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "";
+    console.log(
+      "Current Date- ",
+      currentDate,
+      "lastProfileview  Date - ",
+      lastViewDate
+    );
+
+    if (lastViewDate === currentDate) {
+      if (user.dailyProfileViewCount >= user.subscription.limit) {
+        res
+          .status(402)
+          .json({ message: "Profile view limit exceed for the current plan" });
+      }
+      limit =
+        user.subscription.limit - user.dailyProfileViewCount <= 10
+          ? user.subscription.limit - user.dailyProfileViewCount
+          : limit;
+      let isLimitReached =
+        user.subscription.limit - user.dailyProfileViewCount <= 10
+          ? true
+          : false;
+      const pipeline = createPipeline(user, limit, lastUserId);
+      let possibleMatches = await User.aggregate(pipeline);
+      res.status(200).json({
+        possibleMatches: possibleMatches,
+        isLimitReached: isLimitReached,
+      });
+    } else {
+      const pipeline = createPipeline(user, limit, lastUserId);
+      let possibleMatches = await User.aggregate(pipeline);
+      res.status(200).json({
+        possibleMatches: possibleMatches,
+        isLimitReached: false,
+      });
+    }
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

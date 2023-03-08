@@ -130,6 +130,13 @@ const userSchema = new Schema({
       },
     ],
   },
+  dailyProfileViewCount: {
+    type: Number,
+    default: 0,
+  },
+  lastProfileViewDate: {
+    type: Date,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

@@ -19,7 +19,9 @@ exports.calculateAge = (birthday) => {
   return age;
 };
 
-exports.createPipeline = (user) => {
+exports.createPipeline = (user, limit, lastUserId) => {
+  const ObjectId = require("mongoose").Types.ObjectId;
+  lastUserId = lastUserId === undefined ? "" : new ObjectId(lastUserId);
   const {
     location,
     discoverySettings,
@@ -122,8 +124,36 @@ exports.createPipeline = (user) => {
       },
     },
     {
-      $limit: subscription.limit,
+      $limit: limit,
+    },
+    {
+      $sort: {
+        _id: 1,
+      },
+    },
+    {
+      $match: {
+        $expr: {
+          $gt: [
+            {
+              $ifNull: ["$_id", new ObjectId("000000000000000000000000")],
+            },
+            lastUserId,
+          ],
+        },
+      },
     },
   ];
   return pipeline;
+};
+
+exports.getCurrentISTDate = () => {
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Asia/Kolkata",
+  };
+  const currentDate = new Date().toLocaleString("en-US", options);
+  return currentDate;
 };
