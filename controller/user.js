@@ -356,17 +356,49 @@ exports.getReverseGeocode = async (req, res, next) => {
 
 exports.updateLikedProfiles = async (req, res, next) => {
   const userId = req.userId;
-  const likedUserId = req.body;
+  const likedUserId = req.body.userId;
   try {
     let currentDate = new Date(getCurrentISTDate());
     const result = await User.updateOne(
       { _id: userId },
       {
-        $addToSet: { "matches.likedProfiles": likedUserId.userId },
+        $addToSet: { "matches.likedProfiles": likedUserId },
         $inc: { dailyProfileViewCount: 1 },
         $set: { lastProfileViewDate: currentDate },
       }
     );
+    if (result.modifiedCount <= 0) {
+      const error = new Error("Adding right swipped user fails!");
+      error.statusCode = 500;
+      console.log(error);
+      throw error;
+    }
+
+    console.log(likedUserId);
+    let user = await User.findById(likedUserId, { "matches.likedProfiles": 1 });
+
+    if (!user) {
+      const error = new Error("Right swipped user doesn't exist!");
+      error.statusCode = 500;
+      console.log(error);
+      throw error;
+    }
+
+    console.log(user.matches.likedProfiles);
+    if (user.matches.likedProfiles.includes(userId)) {
+      console.log("It's a match");
+      let matchUpdate1 = await User.updateOne(
+        { _id: userId },
+        { $addToSet: { "matches.matchedProfiles": likedUserId } }
+      );
+
+      let matchUpdate2 = await User.updateOne(
+        { _id: likedUserId },
+        { $addToSet: { "matches.matchedProfiles": userId } }
+      );
+      console.log(matchUpdate2, " ", matchUpdate1);
+    }
+
     res.status(200).json({ message: "liked profile added!" });
   } catch (err) {
     if (!err.statusCode) {
