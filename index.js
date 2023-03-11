@@ -10,6 +10,10 @@ const session = require("express-session");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const { onMessage } = require("./controller/messages");
+const { verifyJWT } = require("./middleware/is-auth");
+const conversations = require("./models/conversations");
+const { seedConversations } = require("./utilits/seed");
+// const { seedDb } = require("./utilits/seed");
 
 require("./strategies/github");
 require("./strategies/linkedin");
@@ -46,6 +50,9 @@ app.use((error, req, res) => {
 
 mongoose.connect(MONGODB_URL, () => console.log("Connected to DB!"));
 
+// seedDb();
+seedConversations();
+
 // sockets code
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -60,9 +67,27 @@ const io = new Server(httpServer, {
 //   });
 // });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
+  if (!socket.handshake.auth.token) {
+    socket.disconnect(true);
+    return;
+  }
+  const token = socket.handshake.auth.token;
+  const decodedToken = verifyJWT(token);
+  const userId = decodedToken?.userId;
+
+  const allConversationsForUserIds = await conversations.find({
+    $or: [{ fromUserId: userId }, { toUserId: userId }],
+  });
+
+  console.log({ allConversationsForUserIds });
+
+  allConversationsForUserIds.forEach((item) => {
+    socket.join(`${item.conversationId}`);
+  });
+
   socket.on("join", async () => {});
-  socket.on("message", onMessage);
+  socket.on("message", (data) => onMessage(data, socket, userId, io));
 
   socket.on("disconnect", () => {
     console.log("🔥: A user disconnected");

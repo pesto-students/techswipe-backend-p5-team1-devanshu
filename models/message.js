@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const messagesSchema = new Schema({
+  conversationId: {
+    type: String,
+  },
   fromUserId: {
     type: String,
   },
@@ -9,14 +12,23 @@ const messagesSchema = new Schema({
     type: String,
   },
   text: {
-    type: Array,
-  },
-  read: {
-    type: Boolean,
+    type: String,
   },
   timeStamp: {
     type: Date,
   },
+  read: [
+    {
+      userId: {
+        type: String,
+        required: true,
+      },
+      read: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
 });
 
 module.exports = mongoose.model("Message", messagesSchema);
