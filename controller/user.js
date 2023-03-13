@@ -1,5 +1,4 @@
 const User = require("../models/user");
-require("dotenv").config();
 const { validationResult } = require("express-validator");
 const {
   calculateAge,
@@ -8,6 +7,46 @@ const {
 } = require("../utilits/utilit");
 const { response } = require("express");
 const { GEOAPIFY_API_KEY } = process.env;
+const jwt = require("jsonwebtoken");
+const conversations = require("../models/conversations");
+const { BASE_URL_FRONTEND, JWT_KEY } = process.env;
+
+exports.guestUserLogin = async (req, res, next) => {
+  const { email } = req.query;
+
+  try {
+    const user = await User.findOne({ email });
+    const token = jwt.sign(
+      {
+        userId: user._id.toString(),
+      },
+      JWT_KEY,
+      { expiresIn: "1w" }
+    );
+    res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.getUserConversation = async (req, res, next) => {
+  const userId = req.userId;
+
+  try {
+    const conversationsList = await conversations.find({
+      $or: [{ fromUserId: userId }, { toUserId: userId }],
+    });
+    res.status(200).json({ data: conversationsList });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
 
 exports.profileStatus = async (req, res, next) => {
   const userId = req.userId;
