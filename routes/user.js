@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controller/user");
-const isAuth = require("../middleware/is-auth");
+const { isAuth } = require("../middleware/is-auth");
 const {
   addUserInfoValidator,
   emailValidator,
@@ -40,5 +40,8 @@ router.get(
   userController.getPossibleMatchingProfiles
 );
 // router.get("/matchedProfiles", isAuth, userController.getMatchedProfiles);
+
+router.get("/randomUser", userController.guestUserLogin);
+router.get("/conversationsList", isAuth, userController.getUserConversation);
 
 module.exports = router;
