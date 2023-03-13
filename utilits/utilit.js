@@ -28,7 +28,7 @@ exports.createPipeline = (user, limit, lastUserId) => {
     matches,
     techStack,
     interest,
-    QuestionAnswers,
+    questionAnswers,
     subscription,
   } = user;
   let role =
@@ -46,7 +46,7 @@ exports.createPipeline = (user, limit, lastUserId) => {
       ? ["Male", "Female", "Other"]
       : [discoverySettings.gender];
   let existingUserIds = matches.likedProfiles.concat(matches.dislikedProfiles);
-  let userParameters = techStack.concat(interest).concat(QuestionAnswers);
+  let userParameters = techStack.concat(interest).concat(questionAnswers);
   console.log(userParameters);
   console.log(existingUserIds);
   let pipeline = [
@@ -124,9 +124,6 @@ exports.createPipeline = (user, limit, lastUserId) => {
       },
     },
     {
-      $limit: limit,
-    },
-    {
       $sort: {
         _id: 1,
       },
@@ -142,6 +139,9 @@ exports.createPipeline = (user, limit, lastUserId) => {
           ],
         },
       },
+    },
+    {
+      $limit: limit,
     },
   ];
   return pipeline;

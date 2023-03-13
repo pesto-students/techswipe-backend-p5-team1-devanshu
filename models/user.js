@@ -105,7 +105,7 @@ const userSchema = new Schema({
   },
   techStack: Array,
   interest: Array,
-  QuestionAnswers: Array,
+  questionAnswers: Array,
   socialMedia: {
     linkedIn: String,
     Github: String,

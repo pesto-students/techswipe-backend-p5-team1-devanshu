@@ -102,7 +102,7 @@ exports.addUserInfo = async (req, res, next) => {
       workExperience,
       techStack,
       interest,
-      QuestionAnswers,
+      questionAnswers,
       birthday,
       gender,
       discoverySettings,
@@ -149,7 +149,7 @@ exports.addUserInfo = async (req, res, next) => {
           workExperience: workExperience,
           techStack: techStack,
           interest: interest,
-          QuestionAnswers: QuestionAnswers,
+          questionAnswers: questionAnswers,
           phoneNumber: phoneNumber,
           birthday: birthday,
           gender: gender,
@@ -200,7 +200,7 @@ exports.updateUserInfo = async (req, res, next) => {
       workExperience,
       techStack,
       interest,
-      QuestionAnswers,
+      questionAnswers,
       birthday,
       gender,
       discoverySettings,
@@ -256,7 +256,7 @@ exports.updateUserInfo = async (req, res, next) => {
           { workExperience: { $ne: workExperience } },
           { techStack: { $ne: techStack } },
           { interest: { $ne: interest } },
-          { QuestionAnswers: { $ne: QuestionAnswers } },
+          { questionAnswers: { $ne: questionAnswers } },
           { phoneNumber: { $ne: phoneNumber } },
           { birthday: { $ne: birthday } },
           { gender: { $ne: gender } },
@@ -281,7 +281,7 @@ exports.updateUserInfo = async (req, res, next) => {
           workExperience: workExperience,
           techStack: techStack,
           interest: interest,
-          QuestionAnswers: QuestionAnswers,
+          questionAnswers: questionAnswers,
           phoneNumber: phoneNumber,
           birthday: birthday,
           gender: gender,
@@ -448,7 +448,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
     "matches.dislikedProfiles": 1,
     techStack: 1,
     interest: 1,
-    QuestionAnswers: 1,
+    questionAnswers: 1,
     "subscription.limit": 1,
     dailyProfileViewCount: 1,
     lastProfileViewDate: 1,
@@ -499,9 +499,11 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
       });
     } else {
       const pipeline = createPipeline(user, limit, lastUserId);
+      console.log(pipeline);
       let possibleMatches = await User.aggregate(pipeline);
       res.status(200).json({
         possibleMatches: possibleMatches,
+        totalResult: possibleMatches.length,
         isLimitReached: false,
       });
     }
