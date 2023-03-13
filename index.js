@@ -1,4 +1,4 @@
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 
@@ -20,7 +20,7 @@ require("./strategies/github");
 require("./strategies/linkedin");
 
 const app = express();
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 8080;
 const MONGODB_URL = process.env.MONGODB_URL;
 
 app.use(
