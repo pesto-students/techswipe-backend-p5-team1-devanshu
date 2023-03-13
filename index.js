@@ -12,7 +12,6 @@ const userRoutes = require("./routes/user");
 const { onMessage } = require("./controller/messages");
 const { verifyJWT } = require("./middleware/is-auth");
 const conversations = require("./models/conversations");
-const { seedConversations } = require("./utilits/seed");
 // const { seedDb } = require("./utilits/seed");
 
 require("./strategies/github");
@@ -50,9 +49,6 @@ app.use((error, req, res) => {
 
 mongoose.connect(MONGODB_URL, () => console.log("Connected to DB!"));
 
-// seedDb();
-seedConversations();
-
 // sockets code
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -60,12 +56,6 @@ const io = new Server(httpServer, {
     origin: "http://localhost:5173",
   },
 });
-
-// io.use((socket, next) => {
-//   socket.on("disconnect", () => {
-//     console.log("disconnected");
-//   });
-// });
 
 io.on("connection", async (socket) => {
   if (!socket.handshake.auth.token) {
@@ -80,10 +70,9 @@ io.on("connection", async (socket) => {
     $or: [{ fromUserId: userId }, { toUserId: userId }],
   });
 
-  console.log({ allConversationsForUserIds });
-
   allConversationsForUserIds.forEach((item) => {
-    socket.join(`${item.conversationId}`);
+    const conversationId = item["_id"].toString();
+    socket.join(`${conversationId}`);
   });
 
   socket.on("join", async () => {});
