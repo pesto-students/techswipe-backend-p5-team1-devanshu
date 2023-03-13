@@ -116,7 +116,9 @@ exports.successLinkedinLogin = (req, res, next) => {
       console.log("photos", req.user.photos);
       if (req.user.photos) {
         profilePhoto =
-          req.user.photos.length !== 0 ? req.user.photos.at(-1).value : "";
+          req.user.photos.length !== 0
+            ? req.user.photos[req.user.photos.length - 1].value
+            : "";
       }
 
       console.log(
