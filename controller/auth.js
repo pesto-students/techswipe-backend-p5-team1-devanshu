@@ -1,5 +1,4 @@
 const User = require("../models/user");
-require("dotenv").config();
 const { BASE_URL_FRONTEND, JWT_KEY } = process.env;
 const jwt = require("jsonwebtoken");
 

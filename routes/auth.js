@@ -1,7 +1,6 @@
 const router = require("express").Router();
 const authController = require("../controller/auth");
 const passport = require("passport");
-require("dotenv").config();
 const { BASE_URL, BASE_URL_FRONTEND } = process.env;
 
 router.get(

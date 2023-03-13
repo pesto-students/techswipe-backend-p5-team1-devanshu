@@ -1,5 +1,4 @@
 const User = require("../models/user");
-require("dotenv").config();
 const { validationResult } = require("express-validator");
 const {
   calculateAge,
