@@ -1,4 +1,7 @@
-require("dotenv").config();
+if (process.env.NODE_ENV === "production") {
+  require("dotenv").config();
+}
+
 const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -12,7 +15,6 @@ const userRoutes = require("./routes/user");
 const { onMessage } = require("./controller/messages");
 const { verifyJWT } = require("./middleware/is-auth");
 const conversations = require("./models/conversations");
-// const { seedDb } = require("./utilits/seed");
 
 require("./strategies/github");
 require("./strategies/linkedin");
@@ -38,6 +40,10 @@ app.use(passport.session());
 
 app.use("/auth", authRoutes);
 app.use("/api/user", userRoutes);
+
+app.get("/", (req, res) => {
+  res.status(200).json("server is running");
+});
 
 app.use((error, req, res) => {
   console.log(error);
