@@ -103,6 +103,11 @@ exports.getUserInfo = async (req, res, next) => {
         matches: 0,
         githubId: 0,
         linkedinId: 0,
+        subscription: 0,
+        socialMedia: 0,
+        photos: 0,
+        dailyProfileViewCount: 0,
+        lastProfileViewDate: 0,
       }
     );
     if (!user) {
@@ -393,11 +398,28 @@ exports.getReverseGeocode = async (req, res, next) => {
     });
 };
 
+exports.getMatchedProfiles = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId, {
+      "matches.matchedProfiles": 1,
+    });
+    console.log(user);
+    res.status(200).json({ matchedProfiles: user.matches.matchedProfiles });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.updateLikedProfiles = async (req, res, next) => {
   const userId = req.userId;
   const likedUserId = req.body.userId;
   try {
     let currentDate = new Date(getCurrentISTDate());
+    console.log(currentDate);
     const result = await User.updateOne(
       { _id: userId },
       {
@@ -406,6 +428,7 @@ exports.updateLikedProfiles = async (req, res, next) => {
         $set: { lastProfileViewDate: currentDate },
       }
     );
+    console.log(result.modifiedCount);
     if (result.modifiedCount <= 0) {
       const error = new Error("Adding right swipped user fails!");
       error.statusCode = 500;
@@ -445,14 +468,13 @@ exports.updateLikedProfiles = async (req, res, next) => {
     }
     next(err);
   }
-  next();
 };
 
 exports.updateDislikedProfiles = async (req, res, next) => {
   const userId = req.userId;
   const dislikedUserId = req.body;
   try {
-    let currentDate = getCurrentISTDate() + "Z";
+    let currentDate = getCurrentISTDate();
     console.log(currentDate);
     const result = await User.updateOne(
       { _id: userId },
@@ -537,8 +559,13 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
         isLimitReached: isLimitReached,
       });
     } else {
+      // Updating Profile count to 0 when it's a new day
+      let update_count = await User.updateOne(
+        { _id: userId },
+        { $set: { dailyProfileViewCount: 0 } }
+      );
+
       const pipeline = createPipeline(user, limit, lastUserId);
-      console.log(pipeline);
       let possibleMatches = await User.aggregate(pipeline);
       res.status(200).json({
         possibleMatches: possibleMatches,

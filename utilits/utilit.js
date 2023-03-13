@@ -155,5 +155,6 @@ exports.getCurrentISTDate = () => {
     timeZone: "Asia/Kolkata",
   };
   const currentDate = new Date().toLocaleString("en-US", options);
-  return currentDate;
+  console.log(currentDate);
+  return currentDate + "Z";
 };

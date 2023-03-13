@@ -39,7 +39,7 @@ router.get(
   isAuth,
   userController.getPossibleMatchingProfiles
 );
-// router.get("/matchedProfiles", isAuth, userController.getMatchedProfiles);
+router.get("/matchedProfiles", isAuth, userController.getMatchedProfiles);
 
 router.get("/randomUser", userController.guestUserLogin);
 router.get("/conversationsList", isAuth, userController.getUserConversation);

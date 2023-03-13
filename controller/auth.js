@@ -105,9 +105,8 @@ exports.successGithubLogin = (req, res, next) => {
 
 exports.successLinkedinLogin = (req, res, next) => {
   try {
-    console.log(req.user);
     if (req.user) {
-      console.log(req.user);
+      console.log("User logged in ", req.user.id);
       const email =
         req.user.emails.length !== 0 ? req.user.emails[0].value : "";
       const name = req.user.displayName;
@@ -124,12 +123,10 @@ exports.successLinkedinLogin = (req, res, next) => {
           console.log("No User with linkedin id ", id);
           //Check wether user with same email is present
           if (email !== null && email !== undefined && email !== "") {
-            console.log("Same email2");
             User.find({ email: email })
               .then((e_user) => {
-                console.log("Same email1");
                 if (e_user.length === 1) {
-                  console.log("Same email");
+                  console.log("User with same email found");
                   e_user[0]["linkedinId"] = id;
                   e_user[0].save().then((loadedUser) => {
                     const token = jwt.sign(
@@ -210,9 +207,11 @@ exports.successLinkedinLogin = (req, res, next) => {
         }
       });
     } else {
+      console.log("No user found");
       res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
     }
   } catch (err) {
+    console.log(err);
     res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
   }
 };

@@ -65,7 +65,7 @@ const userSchema = new Schema({
     },
     gender: {
       type: String,
-      default: "All",
+      default: "Female",
       required: true,
     },
     ageRange: {
