@@ -107,12 +107,18 @@ exports.successLinkedinLogin = (req, res, next) => {
   try {
     if (req.user) {
       console.log("User logged in ", req.user.id);
+      console.log("email - ", req.user.emails);
       const email =
         req.user.emails.length !== 0 ? req.user.emails[0].value : "";
       const name = req.user.displayName;
       const id = req.user.id;
-      let profilePhoto =
-        req.user.photos.length !== 0 ? req.user.photos.at(-1).value : "";
+      let profilePhoto = "";
+      console.log("photos", req.user.photos);
+      if (req.user.photos) {
+        profilePhoto =
+          req.user.photos.length !== 0 ? req.user.photos.at(-1).value : "";
+      }
+
       console.log(
         `UserName = ${name}, email = ${email}, id = ${id}, photo=${req.user.photos} `
       );
