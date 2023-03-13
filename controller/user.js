@@ -1,7 +1,11 @@
 const User = require("../models/user");
 require("dotenv").config();
 const { validationResult } = require("express-validator");
-const { calculateAge } = require("../utilits/utilit");
+const {
+  calculateAge,
+  createPipeline,
+  getCurrentISTDate,
+} = require("../utilits/utilit");
 const { response } = require("express");
 const { GEOAPIFY_API_KEY } = process.env;
 
@@ -98,7 +102,7 @@ exports.addUserInfo = async (req, res, next) => {
       workExperience,
       techStack,
       interest,
-      QuestionAnswers,
+      questionAnswers,
       birthday,
       gender,
       discoverySettings,
@@ -145,7 +149,7 @@ exports.addUserInfo = async (req, res, next) => {
           workExperience: workExperience,
           techStack: techStack,
           interest: interest,
-          QuestionAnswers: QuestionAnswers,
+          questionAnswers: questionAnswers,
           phoneNumber: phoneNumber,
           birthday: birthday,
           gender: gender,
@@ -196,7 +200,7 @@ exports.updateUserInfo = async (req, res, next) => {
       workExperience,
       techStack,
       interest,
-      QuestionAnswers,
+      questionAnswers,
       birthday,
       gender,
       discoverySettings,
@@ -252,7 +256,7 @@ exports.updateUserInfo = async (req, res, next) => {
           { workExperience: { $ne: workExperience } },
           { techStack: { $ne: techStack } },
           { interest: { $ne: interest } },
-          { QuestionAnswers: { $ne: QuestionAnswers } },
+          { questionAnswers: { $ne: questionAnswers } },
           { phoneNumber: { $ne: phoneNumber } },
           { birthday: { $ne: birthday } },
           { gender: { $ne: gender } },
@@ -277,7 +281,7 @@ exports.updateUserInfo = async (req, res, next) => {
           workExperience: workExperience,
           techStack: techStack,
           interest: interest,
-          QuestionAnswers: QuestionAnswers,
+          questionAnswers: questionAnswers,
           phoneNumber: phoneNumber,
           birthday: birthday,
           gender: gender,
@@ -352,12 +356,49 @@ exports.getReverseGeocode = async (req, res, next) => {
 
 exports.updateLikedProfiles = async (req, res, next) => {
   const userId = req.userId;
-  const likedUserId = req.body;
+  const likedUserId = req.body.userId;
   try {
+    let currentDate = new Date(getCurrentISTDate());
     const result = await User.updateOne(
       { _id: userId },
-      { $addToSet: { "matches.likedProfiles": likedUserId.userId } }
+      {
+        $addToSet: { "matches.likedProfiles": likedUserId },
+        $inc: { dailyProfileViewCount: 1 },
+        $set: { lastProfileViewDate: currentDate },
+      }
     );
+    if (result.modifiedCount <= 0) {
+      const error = new Error("Adding right swipped user fails!");
+      error.statusCode = 500;
+      console.log(error);
+      throw error;
+    }
+
+    console.log(likedUserId);
+    let user = await User.findById(likedUserId, { "matches.likedProfiles": 1 });
+
+    if (!user) {
+      const error = new Error("Right swipped user doesn't exist!");
+      error.statusCode = 500;
+      console.log(error);
+      throw error;
+    }
+
+    console.log(user.matches.likedProfiles);
+    if (user.matches.likedProfiles.includes(userId)) {
+      console.log("It's a match");
+      let matchUpdate1 = await User.updateOne(
+        { _id: userId },
+        { $addToSet: { "matches.matchedProfiles": likedUserId } }
+      );
+
+      let matchUpdate2 = await User.updateOne(
+        { _id: likedUserId },
+        { $addToSet: { "matches.matchedProfiles": userId } }
+      );
+      console.log(matchUpdate2, " ", matchUpdate1);
+    }
+
     res.status(200).json({ message: "liked profile added!" });
   } catch (err) {
     if (!err.statusCode) {
@@ -372,14 +413,19 @@ exports.updateDislikedProfiles = async (req, res, next) => {
   const userId = req.userId;
   const dislikedUserId = req.body;
   try {
+    let currentDate = getCurrentISTDate() + "Z";
+    console.log(currentDate);
     const result = await User.updateOne(
       { _id: userId },
       {
+        $set: { lastProfileViewDate: currentDate },
         $addToSet: {
           "matches.dislikedProfiles": dislikedUserId.userId,
         },
+        $inc: { dailyProfileViewCount: 1 },
       }
     );
+    console.log(result);
     res.status(200).json({ message: "Disliked profile added!" });
   } catch (err) {
     if (!err.statusCode) {
@@ -390,58 +436,81 @@ exports.updateDislikedProfiles = async (req, res, next) => {
   next();
 };
 
-// exports.getPossibleMatchingProfiles = (req, res, next) => {
-//   // const userId = req.userId;
-//   // const include = {
-//   //   _id: 0,
-//   //   location: 1,
-//   //   discoverySettings: 1,
-//   // };
-//   // // Getting users discovery settings and location
-//   // User.findById(userId, include).then((user) => {
-//   //   if (!user) {
-//   //     const error = new Error("User not found.");
-//   //     error.statusCode = 404;
-//   //     throw error;
-//   //   }
-//   //   const query = {
-//   //     location: {
-//   //       $near: {
-//   //         $geometry: user.location,
-//   //         $minDistance: 100,
-//   //         $maxDistance: user.discoverySettings.radius,
-//   //       },
-//   //     },
-//   //   };
-//   //   User.find(query).then((user) => {
-//   //     if (!user) {
-//   //       const error = new Error("No matches in the given radius");
-//   //       error.statusCode = 404;
-//   //       throw error;
-//   //     }
-//   //     res.status(200).json({ user: user });
-//   //   });
-//   // });
+exports.getPossibleMatchingProfiles = async (req, res, next) => {
+  const userId = req.userId;
+  const lastUserId = req.query.lastUserId;
+  let limit = 10;
+  console.log("UserId- ", lastUserId);
+  const include = {
+    location: 1,
+    discoverySettings: 1,
+    "matches.likedProfiles": 1,
+    "matches.dislikedProfiles": 1,
+    techStack: 1,
+    interest: 1,
+    questionAnswers: 1,
+    "subscription.limit": 1,
+    dailyProfileViewCount: 1,
+    lastProfileViewDate: 1,
+  };
+  // Getting users discovery settings and location
+  try {
+    const user = await User.findById(userId, include);
+    if (!user) {
+      const error = new Error("User not found.");
+      error.statusCode = 404;
+      throw error;
+    }
 
-//   const pipeline = [
-//     {
-//       $geoNear: {
-//         near: {
-//           type: "Point",
-//           coordinates: [77.496034, 9.654886],
-//         },
-//         distanceField: "distance",
-//         maxDistance: 50000,
-//         query: {
-//           age: {
-//             $gte: 18,
-//             $lte: 45,
-//           },
-//           role: "Full-Stack Developer",
-//           gender: "Male",
-//         },
-//         spherical: true,
-//       },
-//     },
-//   ];
-// };
+    const currentDate = getCurrentISTDate();
+    const lastViewDate = user.lastProfileViewDate
+      ? user.lastProfileViewDate.toLocaleString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "";
+    console.log(
+      "Current Date- ",
+      currentDate,
+      "lastProfileview  Date - ",
+      lastViewDate
+    );
+
+    if (lastViewDate === currentDate) {
+      if (user.dailyProfileViewCount >= user.subscription.limit) {
+        res
+          .status(402)
+          .json({ message: "Profile view limit exceed for the current plan" });
+      }
+      limit =
+        user.subscription.limit - user.dailyProfileViewCount <= 10
+          ? user.subscription.limit - user.dailyProfileViewCount
+          : limit;
+      let isLimitReached =
+        user.subscription.limit - user.dailyProfileViewCount <= 10
+          ? true
+          : false;
+      const pipeline = createPipeline(user, limit, lastUserId);
+      let possibleMatches = await User.aggregate(pipeline);
+      res.status(200).json({
+        possibleMatches: possibleMatches,
+        isLimitReached: isLimitReached,
+      });
+    } else {
+      const pipeline = createPipeline(user, limit, lastUserId);
+      console.log(pipeline);
+      let possibleMatches = await User.aggregate(pipeline);
+      res.status(200).json({
+        possibleMatches: possibleMatches,
+        totalResult: possibleMatches.length,
+        isLimitReached: false,
+      });
+    }
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};

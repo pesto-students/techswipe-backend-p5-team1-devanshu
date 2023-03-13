@@ -76,6 +76,7 @@ exports.addUserInfoValidator = [
     .trim()
     .not()
     .isEmpty()
+    .isIn(["<1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "10+"])
     .withMessage("Invalid workExperience"),
 
   check("techStack")
@@ -86,9 +87,9 @@ exports.addUserInfoValidator = [
     .isArray({ min: 3 })
     .withMessage("Interest Must contain minimum 3 elements"),
 
-  check("QuestionAnswers")
-    .isArray({ min: 10 })
-    .withMessage("QuestionAnswers must have 10 values"),
+  check("questionAnswers")
+    .isArray({ min: 5 })
+    .withMessage("questionAnswers must have 5 values"),
 
   check("coordinates")
     .isLatLong()
@@ -190,6 +191,7 @@ exports.updateUserInfoValidator = [
     .trim()
     .not()
     .isEmpty()
+    .isIn(["<1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "10+"])
     .optional({ nullable: true })
     .withMessage("Invalid workExperience"),
 
@@ -203,10 +205,10 @@ exports.updateUserInfoValidator = [
     .optional({ nullable: true })
     .withMessage("Interest Must contain minimum 3 elements"),
 
-  check("QuestionAnswers")
-    .isArray({ min: 10 })
+  check("questionAnswers")
+    .isArray({ min: 5 })
     .optional({ nullable: true })
-    .withMessage("QuestionAnswers must have 10 values"),
+    .withMessage("questionAnswers must have 5 values"),
 
   check("coordinates")
     .isLatLong()

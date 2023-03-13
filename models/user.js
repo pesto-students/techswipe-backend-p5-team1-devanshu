@@ -105,7 +105,7 @@ const userSchema = new Schema({
   },
   techStack: Array,
   interest: Array,
-  QuestionAnswers: Array,
+  questionAnswers: Array,
   socialMedia: {
     linkedIn: String,
     Github: String,
@@ -129,6 +129,13 @@ const userSchema = new Schema({
         ref: "User",
       },
     ],
+  },
+  dailyProfileViewCount: {
+    type: Number,
+    default: 0,
+  },
+  lastProfileViewDate: {
+    type: Date,
   },
 });
 
