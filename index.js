@@ -20,7 +20,7 @@ require("./strategies/github");
 require("./strategies/linkedin");
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3030;
 const MONGODB_URL = process.env.MONGODB_URL;
 
 app.use(
@@ -48,6 +48,7 @@ app.get("/", (req, res) => {
 app.use((error, req, res) => {
   console.log(error);
   const status = error.statusCode || 500;
+  console.log(status);
   const message = error.message;
   const data = error.data;
   res.status(status).json({ message: message, data: data });
