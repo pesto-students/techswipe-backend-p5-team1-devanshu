@@ -8,15 +8,6 @@ processes = []
 
 [env]
   PORT = "8080"
-  MONGODB_URL = "mongodb+srv://techswipe:TechSwipe%40Pesto@cluster0.cclzckx.mongodb.net/techswipe"
-  GITHUB_CLIENT_ID = "48feeaa7d2b0659ee9ba"
-  GITHUB_CLIENT_SECRET = "95401311e48eea08a535035aaa49be07b8bfb2e8"
-  LINKEDIN_CLIENT_ID = "86k9sqgwwmgzxb"
-  LINKEDIN_CLIENT_SECRET = "IRVncQumyAIzPiU9" 
-  JWT_KEY = "t3chswip3@p3sto"
-  BASE_URL_FRONTEND="https://techswipe.vercel.app/"
-  BASE_URL=""
-  GEOAPIFY_API_KEY="112eddcf23924c998ccb79ed3f2c3b6c"
   
 [experimental]
   auto_rollback = true
