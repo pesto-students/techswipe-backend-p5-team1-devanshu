@@ -45,7 +45,7 @@ app.get("/", (req, res) => {
   res.status(200).json("server is running");
 });
 
-app.use((error, req, res) => {
+app.use((error, req, res, next) => {
   console.log(error);
   const status = error.statusCode || 500;
   console.log(status);
