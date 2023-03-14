@@ -74,7 +74,7 @@ io.on("connection", async (socket) => {
   const userId = decodedToken?.userId;
 
   const allConversationsForUserIds = await conversations.find({
-    $or: [{ fromUserId: userId }, { toUserId: userId }],
+    $or: [{ "fromUser.fromUserId": userId }, { "toUser.toUserId": userId }],
   });
 
   allConversationsForUserIds.forEach((item) => {
