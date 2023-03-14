@@ -420,6 +420,7 @@ exports.updateLikedProfiles = async (req, res, next) => {
   try {
     let currentDate = new Date(getCurrentISTDate());
     console.log(currentDate);
+    console.log("UserId-", userId);
     const result = await User.updateOne(
       { _id: userId },
       {
@@ -501,7 +502,6 @@ exports.updateDislikedProfiles = async (req, res, next) => {
     }
     next(err);
   }
-  next();
 };
 
 exports.getPossibleMatchingProfiles = async (req, res, next) => {
