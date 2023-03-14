@@ -576,7 +576,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
         { $set: { dailyProfileViewCount: 0 } }
       );
 
-      const pipeline = createPipeline(user, limit, lastUserId);
+      const pipeline = createPossibleMatchesPipeline(user, limit, lastUserId);
       let possibleMatches = await User.aggregate(pipeline);
       res.status(200).json({
         possibleMatches: possibleMatches,
