@@ -19,7 +19,7 @@ exports.calculateAge = (birthday) => {
   return age;
 };
 
-exports.createPipeline = (user, limit, lastUserId) => {
+exports.createPossibleMatchesPipeline = (user, limit, lastUserId) => {
   const ObjectId = require("mongoose").Types.ObjectId;
   lastUserId = lastUserId === undefined ? "" : new ObjectId(lastUserId);
   const {
@@ -147,6 +147,26 @@ exports.createPipeline = (user, limit, lastUserId) => {
   return pipeline;
 };
 
+exports.createMatchesPipeline = (matchedIds) => {
+  const pipeline = [
+    {
+      $match: {
+        _id: {
+          $in: matchedIds,
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        profilePhoto: 1,
+      },
+    },
+  ];
+
+  return pipeline;
+};
 exports.getCurrentISTDate = () => {
   const options = {
     year: "numeric",
