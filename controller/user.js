@@ -2,7 +2,8 @@ const User = require("../models/user");
 const { validationResult } = require("express-validator");
 const {
   calculateAge,
-  createPipeline,
+  createPossibleMatchesPipeline,
+  createMatchesPipeline,
   getCurrentISTDate,
 } = require("../utilits/utilit");
 const { response } = require("express");
@@ -405,7 +406,10 @@ exports.getMatchedProfiles = async (req, res, next) => {
       "matches.matchedProfiles": 1,
     });
     console.log(user);
-    res.status(200).json({ matchedProfiles: user.matches.matchedProfiles });
+    const pipeline = createMatchesPipeline(user.matches.matchedProfiles);
+    console.log(pipeline);
+    const matchedProfiles = await User.aggregate(pipeline);
+    res.status(200).json({ matchedProfiles: matchedProfiles });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -467,9 +471,9 @@ exports.updateLikedProfiles = async (req, res, next) => {
       let conversation = await Conversations.create(newConversation);
       console.log(matchUpdate2, " ", matchUpdate1, " ", conversation);
       res.status(200).json({ message: "liked profile added!", match: true });
+    } else {
+      res.status(200).json({ message: "liked profile added!", match: false });
     }
-
-    res.status(200).json({ message: "liked profile added!", match: false });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -559,7 +563,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
         user.subscription.limit - user.dailyProfileViewCount <= 10
           ? true
           : false;
-      const pipeline = createPipeline(user, limit, lastUserId);
+      const pipeline = createPossibleMatchesPipeline(user, limit, lastUserId);
       let possibleMatches = await User.aggregate(pipeline);
       res.status(200).json({
         possibleMatches: possibleMatches,
@@ -576,6 +580,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
       let possibleMatches = await User.aggregate(pipeline);
       res.status(200).json({
         possibleMatches: possibleMatches,
+        pipeline: pipeline,
         totalResult: possibleMatches.length,
         isLimitReached: false,
       });
