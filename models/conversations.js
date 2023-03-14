@@ -2,11 +2,29 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const conversationSchema = new Schema({
-  fromUserId: {
-    type: String,
+  fromUser: {
+    fromUserId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    name: {
+      type: String,
+    },
+    profilePhoto: {
+      type: String,
+    },
   },
-  toUserId: {
-    type: String,
+  toUser: {
+    toUserId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    name: {
+      type: String,
+    },
+    profilePhoto: {
+      type: String,
+    },
   },
 });
 

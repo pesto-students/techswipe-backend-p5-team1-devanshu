@@ -16,15 +16,19 @@ exports.guestUserLogin = async (req, res, next) => {
   const { email } = req.query;
 
   try {
-    const user = await User.findOne({ email });
-    const token = jwt.sign(
-      {
-        userId: user._id.toString(),
-      },
-      JWT_KEY,
-      { expiresIn: "1w" }
-    );
-    res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
+    if (email === "pestoproject@gmail.com") {
+      const user = await User.findOne({ email });
+      const token = jwt.sign(
+        {
+          userId: user._id.toString(),
+        },
+        JWT_KEY,
+        { expiresIn: "1w" }
+      );
+      res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
+    } else {
+      res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
+    }
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -38,7 +42,7 @@ exports.getUserConversation = async (req, res, next) => {
 
   try {
     const conversationsList = await Conversations.find({
-      $or: [{ fromUserId: userId }, { toUserId: userId }],
+      $or: [{ "fromUser.fromUserId": userId }, { "toUser.toUserId": userId }],
     });
     res.status(200).json({ data: conversationsList });
   } catch (err) {
@@ -442,7 +446,11 @@ exports.updateLikedProfiles = async (req, res, next) => {
     }
 
     console.log(likedUserId);
-    let user = await User.findById(likedUserId, { "matches.likedProfiles": 1 });
+    let user = await User.findById(likedUserId, {
+      "matches.likedProfiles": 1,
+      name: 1,
+      profilePhoto: 1,
+    });
 
     if (!user) {
       const error = new Error("Right swipped user doesn't exist!");
@@ -463,10 +471,22 @@ exports.updateLikedProfiles = async (req, res, next) => {
         { _id: likedUserId },
         { $addToSet: { "matches.matchedProfiles": userId } }
       );
+      let currentUser = await User.findById(userId, {
+        name: 1,
+        profilePhoto: 1,
+      });
 
       let newConversation = {
-        fromUserId: userId,
-        toUserId: likedUserId,
+        fromUser: {
+          fromUserId: userId,
+          name: currentUser.name,
+          profilePhoto: currentUser.profilePhoto,
+        },
+        toUser: {
+          toUserId: likedUserId,
+          name: user.name,
+          profilePhoto: user.profilePhoto,
+        },
       };
       let conversation = await Conversations.create(newConversation);
       console.log(matchUpdate2, " ", matchUpdate1, " ", conversation);
