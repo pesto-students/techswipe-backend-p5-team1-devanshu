@@ -8,7 +8,7 @@ const {
 const { response } = require("express");
 const { GEOAPIFY_API_KEY } = process.env;
 const jwt = require("jsonwebtoken");
-const conversations = require("../models/conversations");
+const Conversations = require("../models/conversations");
 const { BASE_URL_FRONTEND, JWT_KEY } = process.env;
 
 exports.guestUserLogin = async (req, res, next) => {
@@ -36,7 +36,7 @@ exports.getUserConversation = async (req, res, next) => {
   const userId = req.userId;
 
   try {
-    const conversationsList = await conversations.find({
+    const conversationsList = await Conversations.find({
       $or: [{ fromUserId: userId }, { toUserId: userId }],
     });
     res.status(200).json({ data: conversationsList });
@@ -458,10 +458,17 @@ exports.updateLikedProfiles = async (req, res, next) => {
         { _id: likedUserId },
         { $addToSet: { "matches.matchedProfiles": userId } }
       );
-      console.log(matchUpdate2, " ", matchUpdate1);
+
+      let newConversation = {
+        fromUserId: userId,
+        toUserId: likedUserId,
+      };
+      let conversation = await Conversations.create(newConversation);
+      console.log(matchUpdate2, " ", matchUpdate1, " ", conversation);
+      res.status(200).json({ message: "liked profile added!", match: true });
     }
 
-    res.status(200).json({ message: "liked profile added!" });
+    res.status(200).json({ message: "liked profile added!", match: false });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
