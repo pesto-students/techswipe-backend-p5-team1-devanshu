@@ -26,6 +26,7 @@ router.post(
   userController.checkEmailAlreadyExists
 );
 router.get("/info", isAuth, userController.getUserInfo);
+router.post("/profile-upload", isAuth, userController.uploadProfileImage);
 router.post(
   "/reverse-geocode",
   isAuth,

@@ -6,6 +6,7 @@ const {
   createMatchesPipeline,
   getCurrentISTDate,
 } = require("../utilits/utilit");
+const { cloudinary } = require("../utilits/cloudinary");
 const { response } = require("express");
 const { GEOAPIFY_API_KEY } = process.env;
 const jwt = require("jsonwebtoken");
@@ -18,14 +19,18 @@ exports.guestUserLogin = async (req, res, next) => {
   try {
     if (email === "pestoproject@gmail.com") {
       const user = await User.findOne({ email });
-      const token = jwt.sign(
-        {
-          userId: user._id.toString(),
-        },
-        JWT_KEY,
-        { expiresIn: "1w" }
-      );
-      res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
+      if (user) {
+        const token = jwt.sign(
+          {
+            userId: user._id.toString(),
+          },
+          JWT_KEY,
+          { expiresIn: "1w" }
+        );
+        res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
+      } else {
+        res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
+      }
     } else {
       res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
     }
@@ -37,6 +42,21 @@ exports.guestUserLogin = async (req, res, next) => {
   }
 };
 
+exports.uploadProfileImage = async (req, res, next) => {
+  try {
+    const fileStr = req.body.data;
+    const uploadResponse = await cloudinary.uploader.upload(fileStr, {
+      upload_preset: "techswipe",
+    });
+    console.log(uploadResponse);
+    res
+      .status(200)
+      .json({ msg: "Image Uploaded", profileUrl: uploadResponse.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ err: "Something went wrong" });
+  }
+};
 exports.getUserConversation = async (req, res, next) => {
   const userId = req.userId;
 
@@ -600,7 +620,6 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
       let possibleMatches = await User.aggregate(pipeline);
       res.status(200).json({
         possibleMatches: possibleMatches,
-        pipeline: pipeline,
         totalResult: possibleMatches.length,
         isLimitReached: false,
       });
