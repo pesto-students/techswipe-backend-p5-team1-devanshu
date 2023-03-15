@@ -29,10 +29,10 @@ exports.guestUserLogin = async (req, res, next) => {
         );
         res.redirect(`${BASE_URL_FRONTEND}/login?token=${token}`);
       } else {
-        res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
+        res.redirect(`${BASE_URL_FRONTEND}/login?failed=true`);
       }
     } else {
-      res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
+      res.redirect(`${BASE_URL_FRONTEND}/login?failed=true`);
     }
   } catch (err) {
     if (!err.statusCode) {
@@ -575,13 +575,14 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
     }
 
     const currentDate = getCurrentISTDate();
-    const lastViewDate = user.lastProfileViewDate
+    let lastViewDate = user.lastProfileViewDate
       ? user.lastProfileViewDate.toLocaleString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
         })
       : "";
+    lastViewDate = lastViewDate + "Z";
     console.log(
       "Current Date- ",
       currentDate,
