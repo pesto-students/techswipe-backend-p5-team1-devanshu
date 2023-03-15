@@ -442,6 +442,40 @@ exports.getMatchedProfiles = async (req, res, next) => {
   }
 };
 
+exports.getMatchedUserInfo = async (req, res, next) => {
+  const matchedUserId = req.params.userId;
+  console.log(`Getting User info of ${matchedUserId}...`);
+  try {
+    const user = await User.findById(
+      { _id: matchedUserId },
+      {
+        matches: 0,
+        githubId: 0,
+        linkedinId: 0,
+        subscription: 0,
+        socialMedia: 0,
+        photos: 0,
+        dailyProfileViewCount: 0,
+        lastProfileViewDate: 0,
+        location: 0,
+        discoverySettings: 0,
+        privacy: 0,
+      }
+    );
+    if (!user) {
+      const error = new Error("User not found.");
+      error.statusCode = 404;
+      throw error;
+    }
+    res.status(200).json({ matchUserInfo: user });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.updateLikedProfiles = async (req, res, next) => {
   const userId = req.userId;
   const likedUserId = req.body.userId;

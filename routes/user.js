@@ -35,6 +35,9 @@ router.post(
 );
 router.put("/liked-profile", isAuth, userController.updateLikedProfiles);
 router.put("/disliked-profile", isAuth, userController.updateDislikedProfiles);
+
+router.get("/matchUserInfo/:userId", isAuth, userController.getMatchedUserInfo);
+
 router.get(
   "/possible-profiles",
   isAuth,
