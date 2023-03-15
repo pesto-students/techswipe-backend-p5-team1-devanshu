@@ -31,6 +31,7 @@ exports.createPossibleMatchesPipeline = (user, limit, lastUserId) => {
     questionAnswers,
     subscription,
   } = user;
+
   let role =
     discoverySettings.role === "All"
       ? [
@@ -47,8 +48,7 @@ exports.createPossibleMatchesPipeline = (user, limit, lastUserId) => {
       : [discoverySettings.gender];
   let existingUserIds = matches.likedProfiles.concat(matches.dislikedProfiles);
   let userParameters = techStack.concat(interest).concat(questionAnswers);
-  console.log(userParameters);
-  console.log(existingUserIds);
+  existingUserIds.push(user._id);
   let pipeline = [
     {
       $geoNear: {
@@ -142,6 +142,19 @@ exports.createPossibleMatchesPipeline = (user, limit, lastUserId) => {
     },
     {
       $limit: limit,
+    },
+  ];
+  return pipeline;
+};
+
+exports.createHotPipeline = (user) => {
+  let gender = user.discoverySettings.gender === "Male" ? "Male" : "Female";
+  let pipeline = [
+    {
+      $match: {
+        hotProfile: true,
+        gender: gender,
+      },
     },
   ];
   return pipeline;

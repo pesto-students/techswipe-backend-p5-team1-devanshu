@@ -4,6 +4,7 @@ const {
   calculateAge,
   createPossibleMatchesPipeline,
   createMatchesPipeline,
+  createHotPipeline,
   getCurrentISTDate,
 } = require("../utilits/utilit");
 const { cloudinary } = require("../utilits/cloudinary");
@@ -479,10 +480,9 @@ exports.getMatchedUserInfo = async (req, res, next) => {
 exports.updateLikedProfiles = async (req, res, next) => {
   const userId = req.userId;
   const likedUserId = req.body.userId;
+  console.log(` Adding UserId ${likedUserId} to likedProfiles`);
   try {
     let currentDate = new Date(getCurrentISTDate());
-    console.log(currentDate);
-    console.log("UserId-", userId);
     const result = await User.updateOne(
       { _id: userId },
       {
@@ -491,15 +491,14 @@ exports.updateLikedProfiles = async (req, res, next) => {
         $set: { lastProfileViewDate: currentDate },
       }
     );
-    console.log(result.modifiedCount);
     if (result.modifiedCount <= 0) {
+      console.log(result.modifiedCount);
       const error = new Error("Adding right swipped user fails!");
       error.statusCode = 500;
       console.log(error);
       throw error;
     }
 
-    console.log(likedUserId);
     let user = await User.findById(likedUserId, {
       "matches.likedProfiles": 1,
       name: 1,
@@ -513,9 +512,8 @@ exports.updateLikedProfiles = async (req, res, next) => {
       throw error;
     }
 
-    console.log(user.matches.likedProfiles);
     if (user.matches.likedProfiles.includes(userId)) {
-      console.log("It's a match");
+      console.log(userId, "matched with ", likedUserId);
       let matchUpdate1 = await User.updateOne(
         { _id: userId },
         { $addToSet: { "matches.matchedProfiles": likedUserId } }
@@ -559,6 +557,7 @@ exports.updateLikedProfiles = async (req, res, next) => {
 exports.updateDislikedProfiles = async (req, res, next) => {
   const userId = req.userId;
   const dislikedUserId = req.body;
+  console.log(`User id ${dislikedUserId.userId} added to disliked profiles`);
   try {
     let currentDate = getCurrentISTDate();
     console.log(currentDate);
@@ -586,7 +585,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
   const userId = req.userId;
   const lastUserId = req.query.lastUserId;
   let limit = 10;
-  console.log("UserId- ", lastUserId);
+  console.log(`Getting Matched profile of user- ${userId}`);
   const include = {
     location: 1,
     discoverySettings: 1,
@@ -626,24 +625,41 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
 
     if (lastViewDate === currentDate) {
       if (user.dailyProfileViewCount >= user.subscription.limit) {
-        res
-          .status(402)
-          .json({ message: "Profile view limit exceed for the current plan" });
+        res.status(402).json({
+          message: "Profile view limit exceed for the current plan",
+          isLimitReached: true,
+        });
+      } else {
+        let profileLimit =
+          user.subscription.limit - user.dailyProfileViewCount <= limit
+            ? user.subscription.limit - user.dailyProfileViewCount
+            : limit;
+        let isLimitReached =
+          user.subscription.limit - user.dailyProfileViewCount <= limit
+            ? true
+            : false;
+        const pipeline = createPossibleMatchesPipeline(
+          user,
+          profileLimit,
+          lastUserId
+        );
+        let possibleMatches = await User.aggregate(pipeline);
+        console.log(possibleMatches.length);
+        if (possibleMatches.length == 0) {
+          let hotPipeline = createHotPipeline(user);
+          let hotprofiles = await User.aggregate(hotPipeline);
+          res.status(200).json({
+            possibleMatches: hotprofiles,
+            isLimitReached: isLimitReached,
+            hotprofiles: true,
+          });
+        } else {
+          res.status(200).json({
+            possibleMatches: possibleMatches,
+            isLimitReached: isLimitReached,
+          });
+        }
       }
-      limit =
-        user.subscription.limit - user.dailyProfileViewCount <= 10
-          ? user.subscription.limit - user.dailyProfileViewCount
-          : limit;
-      let isLimitReached =
-        user.subscription.limit - user.dailyProfileViewCount <= 10
-          ? true
-          : false;
-      const pipeline = createPossibleMatchesPipeline(user, limit, lastUserId);
-      let possibleMatches = await User.aggregate(pipeline);
-      res.status(200).json({
-        possibleMatches: possibleMatches,
-        isLimitReached: isLimitReached,
-      });
     } else {
       // Updating Profile count to 0 when it's a new day
       let update_count = await User.updateOne(
@@ -653,11 +669,21 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
 
       const pipeline = createPossibleMatchesPipeline(user, limit, lastUserId);
       let possibleMatches = await User.aggregate(pipeline);
-      res.status(200).json({
-        possibleMatches: possibleMatches,
-        totalResult: possibleMatches.length,
-        isLimitReached: false,
-      });
+      if (possibleMatches.length == 0) {
+        let hotPipeline = createHotPipeline(user);
+        let hotprofiles = await User.aggregate(hotPipeline);
+        res.status(200).json({
+          possibleMatches: hotprofiles,
+          isLimitReached: false,
+          hotprofiles: true,
+        });
+      } else {
+        res.status(200).json({
+          possibleMatches: possibleMatches,
+          totalResult: possibleMatches.length,
+          isLimitReached: false,
+        });
+      }
     }
   } catch (err) {
     if (!err.statusCode) {
