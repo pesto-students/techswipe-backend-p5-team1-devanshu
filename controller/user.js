@@ -575,7 +575,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
     }
 
     const currentDate = getCurrentISTDate();
-    const lastViewDate = user.lastProfileViewDate
+    let lastViewDate = user.lastProfileViewDate
       ? user.lastProfileViewDate.toLocaleString("en-US", {
           year: "numeric",
           month: "long",
