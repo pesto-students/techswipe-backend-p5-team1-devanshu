@@ -99,7 +99,7 @@ exports.successGithubLogin = (req, res, next) => {
       }
     });
   } else {
-    res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
+    res.redirect(`${BASE_URL_FRONTEND}/login?failed=true`);
   }
 };
 
@@ -216,10 +216,10 @@ exports.successLinkedinLogin = (req, res, next) => {
       });
     } else {
       console.log("No user found");
-      res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
+      res.redirect(`${BASE_URL_FRONTEND}/login?failed=true`);
     }
   } catch (err) {
     console.log(err);
-    res.redirect(`${BASE_URL_FRONTEND}/login?success=false`);
+    res.redirect(`${BASE_URL_FRONTEND}/login?failed=true`);
   }
 };
