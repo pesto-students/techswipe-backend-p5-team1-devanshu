@@ -150,7 +150,7 @@ exports.getUserInfo = async (req, res, next) => {
   }
 };
 
-exports.addUserInfo = async (req, res, next) => {
+exports.addPersonalUserInfo = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -166,15 +166,9 @@ exports.addUserInfo = async (req, res, next) => {
       profilePhoto,
       email,
       phoneNumber,
-      bio,
-      company,
-      role,
-      workExperience,
-      techStack,
-      interest,
-      questionAnswers,
-      birthday,
       gender,
+      bio,
+      birthday,
       discoverySettings,
       coordinates,
       place,
@@ -198,12 +192,7 @@ exports.addUserInfo = async (req, res, next) => {
       console.log(errors);
       throw error;
     }
-    let privacy =
-      result !== null ? result.privacy : { profileComplete: true, show: true };
-    if (!privacy.profileComplete) {
-      privacy.profileComplete = true;
-      privacy.show = true;
-    }
+
     // Updating user with the new information
 
     User.updateOne(
@@ -213,13 +202,7 @@ exports.addUserInfo = async (req, res, next) => {
           name: name,
           profilePhoto: profilePhoto,
           bio: bio,
-          company: company,
           email: email,
-          role: role,
-          workExperience: workExperience,
-          techStack: techStack,
-          interest: interest,
-          questionAnswers: questionAnswers,
           phoneNumber: phoneNumber,
           birthday: birthday,
           gender: gender,
@@ -227,13 +210,72 @@ exports.addUserInfo = async (req, res, next) => {
           place: place,
           location: location,
           discoverySettings: discoverySettings,
-          "privacy.profileComplete": privacy.profileComplete,
-          "privacy.show": privacy.show,
         },
       }
     )
       .then((result) => {
-        res.status(200).json({ message: "User Updated!" });
+        res.status(200).json({ message: "User basic info added!" });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.addBasicUserInfo = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed.");
+      error.statusCode = 422;
+      error.data = errors.array();
+      console.log(errors);
+      throw error;
+    }
+    const userId = req.userId;
+    const {
+      company,
+      role,
+      workExperience,
+      techStack,
+      interest,
+      questionAnswers,
+    } = req.body;
+
+    // let privacy =
+    //   result !== null ? result.privacy : { profileComplete: true, show: true };
+    // if (!privacy.profileComplete) {
+    //   privacy.profileComplete = true;
+    //   privacy.show = true;
+    // }
+
+    // Updating user with the new information
+
+    User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          company: company,
+          role: role,
+          workExperience: workExperience,
+          techStack: techStack,
+          interest: interest,
+          questionAnswers: questionAnswers,
+          "privacy.profileComplete": true,
+          "privacy.show": true,
+        },
+      }
+    )
+      .then((result) => {
+        res.status(200).json({ message: "User Personal info added!" });
       })
       .catch((err) => {
         if (!err.statusCode) {

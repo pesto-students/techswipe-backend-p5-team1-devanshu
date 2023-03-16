@@ -1,8 +1,7 @@
 const { check } = require("express-validator");
 
-exports.addUserInfoValidator = [
+exports.addPersonalUserValidator = [
   check("name").trim().notEmpty().withMessage("Name is required"),
-
   check("email").isEmail().trim().withMessage("Email is invalid"),
 
   check("birthday")
@@ -14,6 +13,24 @@ exports.addUserInfoValidator = [
     .withMessage("Invalid gender value"),
 
   check("place").trim().notEmpty().withMessage("Place is required"),
+
+  check("profilePhoto")
+    .trim()
+    .not()
+    .isEmpty()
+    .withMessage("Invalid profile url"),
+
+  check("phoneNumber")
+    .trim()
+    .isMobilePhone("en-IN")
+    .optional({ nullable: true })
+    .withMessage("Invalid Phone number"),
+
+  check("bio").trim().not().isEmpty().withMessage("Invalid bio"),
+
+  check("coordinates")
+    .isLatLong()
+    .withMessage("Invalid latitude and logtitude"),
 
   check("discoverySettings.role")
     .isIn([
@@ -41,21 +58,8 @@ exports.addUserInfoValidator = [
   check("discoverySettings.radius")
     .isInt({ min: 1000 })
     .withMessage("Radius must be an integer greater than 1 km"),
-
-  check("profilePhoto")
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage("Invalid profile url"),
-
-  check("phoneNumber")
-    .trim()
-    .isMobilePhone("en-IN")
-    .optional({ nullable: true })
-    .withMessage("Invalid Phone number"),
-
-  check("bio").trim().not().isEmpty().withMessage("Invalid bio"),
-
+];
+exports.addBasicUserValidator = [
   check("company").trim().not().isEmpty().withMessage("Invalid comapny name"),
 
   check("role")
@@ -90,10 +94,6 @@ exports.addUserInfoValidator = [
   check("questionAnswers")
     .isArray({ min: 5 })
     .withMessage("questionAnswers must have 5 values"),
-
-  check("coordinates")
-    .isLatLong()
-    .withMessage("Invalid latitude and logtitude"),
 ];
 
 exports.updateUserInfoValidator = [
