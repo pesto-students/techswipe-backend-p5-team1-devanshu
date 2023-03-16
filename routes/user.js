@@ -3,13 +3,26 @@ const router = express.Router();
 const userController = require("../controller/user");
 const { isAuth } = require("../middleware/is-auth");
 const {
-  addUserInfoValidator,
+  addBasicUserValidator,
+  addPersonalUserValidator,
   emailValidator,
   updateUserInfoValidator,
   locationValidator,
 } = require("../utilits/validators");
 
-router.put("/info", isAuth, addUserInfoValidator, userController.addUserInfo);
+router.put(
+  "/personal-info",
+  isAuth,
+  addPersonalUserValidator,
+  userController.addPersonalUserInfo
+);
+
+router.put(
+  "/basic-info",
+  isAuth,
+  addBasicUserValidator,
+  userController.addBasicUserInfo
+);
 
 router.put(
   "/update-info",
