@@ -16,7 +16,7 @@ TechSwipe enables connections between developers based on their developer intere
 
 # Demo
 
-[Live Demo](techswipe.vercel.app/)
+[Live Demo](https://techswipe.vercel.app/)
 
 ## Please Note:
 
@@ -42,6 +42,10 @@ Running this project should be very easy, quick and automatic using monorepo.
 - [Mongoose](https://mongoosejs.com/)
 - [Socket.io](https://socket.io/)
 - [Cloudinary](https://cloudinary.com/)
+
+# Mentor
+
+- Devanshu Litoria
 
 # Authors
 
