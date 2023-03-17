@@ -2,8 +2,6 @@ const passport = require("passport");
 const GitHubStrategy = require("passport-github2").Strategy;
 const { BASE_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
 
-console.log({ BASE_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET });
-
 passport.use(
   new GitHubStrategy(
     {

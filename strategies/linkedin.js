@@ -2,8 +2,6 @@ const passport = require("passport");
 const LinkedinStrategy = require("passport-linkedin-oauth2").Strategy;
 const { LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, BASE_URL } = process.env;
 
-console.log({ LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, BASE_URL });
-
 passport.use(
   new LinkedinStrategy(
     {

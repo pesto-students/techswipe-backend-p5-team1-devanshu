@@ -8,12 +8,25 @@ const passport = require("passport");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const session = require("express-session");
+const Sentry = require("@sentry/node");
+// Importing @sentry/tracing patches the global hub for tracing to work.
+
 //
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const { onMessage } = require("./controller/messages");
 const { verifyJWT } = require("./middleware/is-auth");
 const conversations = require("./models/conversations");
+
+if (process.env.NODE_ENV === "production") {
+  Sentry.init({
+    dsn: "https://2ec40b902f464ba59c3cbb38c8e37718@o4504848420110336.ingest.sentry.io/4504852544684032",
+
+    // We recommend adjusting this value in production, or using tracesSampler
+    // for finer control
+    tracesSampleRate: 1.0,
+  });
+}
 
 require("./strategies/github");
 require("./strategies/linkedin");
