@@ -31,8 +31,8 @@ Running this project should be very easy, quick and automatic using monorepo.
 
 - Fork or directly clone this repository to your local machine
 - Run `npm i` / `npm install` to install all dependencies.</br>
-- Once the dependencies are finished installing, use the `npm run  dev` command to start the server. </br>
-- Setup frontend by clocking this [link](https://github.com/pesto-students/techswipe-frontend-p5-team1-devanshu)
+- Once the dependencies are finished installing, use the `npm run dev` command to start the server. </br>
+- Setup frontend by clicking this [link](https://github.com/pesto-students/techswipe-frontend-p5-team1-devanshu)
 
 # Technology Stack
 
