@@ -147,14 +147,29 @@ exports.createPossibleMatchesPipeline = (user, limit, lastUserId) => {
   return pipeline;
 };
 
-exports.createHotPipeline = (user) => {
+exports.createHotPipeline = (user, limit) => {
   let gender = user.discoverySettings.gender === "Male" ? "Male" : "Female";
+  let existingUserIds = user.matches.likedProfiles.concat(
+    user.matches.dislikedProfiles
+  );
+  existingUserIds.push(user._id);
   let pipeline = [
     {
       $match: {
         hotProfile: true,
         gender: gender,
+        _id: {
+          $nin: existingUserIds,
+        },
       },
+    },
+    {
+      $sort: {
+        _id: 1,
+      },
+    },
+    {
+      $limit: limit,
     },
   ];
   return pipeline;

@@ -688,7 +688,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
         let possibleMatches = await User.aggregate(pipeline);
         console.log(possibleMatches.length);
         if (possibleMatches.length == 0) {
-          let hotPipeline = createHotPipeline(user);
+          let hotPipeline = createHotPipeline(user, profileLimit);
           let hotprofiles = await User.aggregate(hotPipeline);
           res.status(200).json({
             possibleMatches: hotprofiles,
@@ -712,7 +712,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
       const pipeline = createPossibleMatchesPipeline(user, limit, lastUserId);
       let possibleMatches = await User.aggregate(pipeline);
       if (possibleMatches.length == 0) {
-        let hotPipeline = createHotPipeline(user);
+        let hotPipeline = createHotPipeline(user, limit);
         let hotprofiles = await User.aggregate(hotPipeline);
         res.status(200).json({
           possibleMatches: hotprofiles,
