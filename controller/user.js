@@ -6,8 +6,8 @@ const {
   createMatchesPipeline,
   createHotPipeline,
   getCurrentISTDate,
-} = require("../utilits/utilit");
-const { cloudinary } = require("../utilits/cloudinary");
+} = require("../utils/util");
+const { cloudinary } = require("../utils/cloudinary");
 const { response } = require("express");
 const { GEOAPIFY_API_KEY } = process.env;
 const jwt = require("jsonwebtoken");
@@ -717,6 +717,7 @@ exports.getPossibleMatchingProfiles = async (req, res, next) => {
         res.status(200).json({
           possibleMatches: hotprofiles,
           isLimitReached: false,
+          pipeline: hotPipeline,
           hotprofiles: true,
         });
       } else {

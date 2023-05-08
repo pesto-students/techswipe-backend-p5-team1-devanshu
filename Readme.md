@@ -2,7 +2,7 @@
 
 ![Image](./project-files/Logo.svg)
 
-TechSwipe enables connections between developers based on their developer interests, location & developer role.
+TechSwipe enables connections between developers based on their developer interests, location & developer role.TechSwipe is a platform that matches software developers based on shared interests and locations, similar to dating apps like Tinder. It aims to connect like-minded individuals and foster relationships in the tech community.
 
 # Table of Contents
 
@@ -43,14 +43,14 @@ Running this project should be very easy, quick and automatic using monorepo.
 - [Socket.io](https://socket.io/)
 - [Cloudinary](https://cloudinary.com/)
 
-# Mentor
-
-- Devanshu Litoria
-
 # Authors
 
 - Reegan Benny
 - Sridhar katta
+
+# Mentor
+
+- Devanshu Litoria
 
 # License
 
