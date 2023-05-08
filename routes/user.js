@@ -8,7 +8,7 @@ const {
   emailValidator,
   updateUserInfoValidator,
   locationValidator,
-} = require("../utilits/validators");
+} = require("../utils/validators");
 
 router.put(
   "/personal-info",
